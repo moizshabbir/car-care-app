@@ -177,6 +177,18 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
     emit(state.copyWith(status: QuickLogStatus.saving));
 
     try {
+      final recentLogs = await _logRepository.getRecentFuelLogs();
+      if (recentLogs.isNotEmpty) {
+        final lastLog = recentLogs.first;
+        if (event.odometer <= lastLog.odometer) {
+          emit(state.copyWith(
+            status: QuickLogStatus.error,
+            errorMessage: 'Odometer must be greater than previous log (${lastLog.odometer})',
+          ));
+          return;
+        }
+      }
+
       // Get location
       final position = await _locationService.getCurrentLocation();
 

@@ -9,6 +9,6 @@ void main() {
     await tester.pumpWidget(const MyApp());
 
     // Verify that our app displays the initialized text.
-    expect(find.text('CarCareApp Initialized'), findsOneWidget);
+    expect(find.text('Car Care App Initialized'), findsOneWidget);
   });
 }
