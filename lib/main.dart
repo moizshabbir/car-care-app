@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:car_care_app/firebase_options.dart';
 import 'package:car_care_app/injection.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -11,26 +16,36 @@ import 'features/logs/presentation/pages/quick_log_page.dart';
 import 'features/logs/presentation/pages/share_stats_page.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // TODO: Replace with your actual Firebase configuration
-  try {
+    // TODO: Replace with your actual Firebase configuration
+    try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-  } catch (e) {
+
+      // Pass all uncaught "fatal" errors from the framework to Crashlytics
+      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+    } catch (e) {
       // Ignore error for now if config is missing, to allow app to start for UI testing
       debugPrint("Firebase initialization failed: $e");
-  }
+    }
 
-  // Initialize Hive
-  await Hive.initFlutter();
-  Hive.registerAdapter(FuelLogModelAdapter());
-  Hive.registerAdapter(LocationModelAdapter());
-  Hive.registerAdapter(MaintenanceLogModelAdapter());
+    // Initialize Hive
+    await Hive.initFlutter();
+    Hive.registerAdapter(FuelLogModelAdapter());
+    Hive.registerAdapter(LocationModelAdapter());
+    Hive.registerAdapter(MaintenanceLogModelAdapter());
 
-  configureDependencies();
-  runApp(const MyApp());
+    configureDependencies();
+    runApp(const MyApp());
+  }, (error, stack) => FirebaseCrashlytics.instance.recordError(error, stack, fatal: true));
 }
 
 class MyApp extends StatelessWidget {

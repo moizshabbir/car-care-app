@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/analytics_service.dart';
+import '../../../../injection.dart';
 import '../bloc/quick_log_bloc.dart';
 import '../bloc/quick_log_event.dart';
 import '../bloc/quick_log_state.dart';
@@ -18,13 +20,23 @@ class _ManualEntryFormState extends State<ManualEntryForm> {
   late TextEditingController _litersController;
   late TextEditingController _costController;
 
+  // Store initial values to detect manual edits to OCR data
+  String? _initialOdometer;
+  String? _initialLiters;
+  String? _initialCost;
+
   @override
   void initState() {
     super.initState();
     final state = context.read<QuickLogBloc>().state;
-    _odometerController = TextEditingController(text: state.odometer?.toString() ?? '');
-    _litersController = TextEditingController(text: state.liters?.toString() ?? '');
-    _costController = TextEditingController(text: state.cost?.toString() ?? '');
+
+    _initialOdometer = state.odometer?.toString() ?? '';
+    _initialLiters = state.liters?.toString() ?? '';
+    _initialCost = state.cost?.toString() ?? '';
+
+    _odometerController = TextEditingController(text: _initialOdometer);
+    _litersController = TextEditingController(text: _initialLiters);
+    _costController = TextEditingController(text: _initialCost);
   }
 
   @override
@@ -41,11 +53,26 @@ class _ManualEntryFormState extends State<ManualEntryForm> {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == QuickLogStatus.saved) {
+           final analytics = getIt<AnalyticsService>();
+           analytics.logLogCompleted(true);
+           analytics.stopTimer('time_to_log');
+
+           if (_initialOdometer!.isNotEmpty && _initialOdometer != _odometerController.text) {
+             analytics.logOCRManualEdit('odometer');
+           }
+           if (_initialLiters!.isNotEmpty && _initialLiters != _litersController.text) {
+             analytics.logOCRManualEdit('liters');
+           }
+           if (_initialCost!.isNotEmpty && _initialCost != _costController.text) {
+             analytics.logOCRManualEdit('cost');
+           }
+
            ScaffoldMessenger.of(context).showSnackBar(
              const SnackBar(content: Text('Log saved successfully!')),
            );
            Navigator.of(context).pop();
         } else if (state.status == QuickLogStatus.error) {
+           getIt<AnalyticsService>().logLogCompleted(false);
            ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(content: Text(state.errorMessage ?? 'Unknown error')),
            );

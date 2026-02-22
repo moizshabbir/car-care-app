@@ -2,14 +2,36 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../injection.dart';
 import '../bloc/quick_log_bloc.dart';
 import '../bloc/quick_log_event.dart';
 import '../bloc/quick_log_state.dart';
 import '../widgets/manual_entry_form.dart';
 
-class QuickLogPage extends StatelessWidget {
+class QuickLogPage extends StatefulWidget {
   const QuickLogPage({super.key});
+
+  @override
+  State<QuickLogPage> createState() => _QuickLogPageState();
+}
+
+class _QuickLogPageState extends State<QuickLogPage> {
+  @override
+  void initState() {
+    super.initState();
+    final analytics = getIt<AnalyticsService>();
+    analytics.logLogStart();
+    analytics.startTimer('time_to_log');
+  }
+
+  @override
+  void dispose() {
+    // Ensure timer is stopped if page is closed without saving (aborted log)
+    // If saved, ManualEntryForm will have stopped it already.
+    getIt<AnalyticsService>().stopTimer('time_to_log');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
