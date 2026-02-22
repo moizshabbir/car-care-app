@@ -6,7 +6,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'features/logs/data/models/fuel_log_model.dart';
 import 'features/logs/data/models/location_model.dart';
+import 'features/logs/data/models/maintenance_log_model.dart';
 import 'features/logs/presentation/pages/quick_log_page.dart';
+import 'features/logs/presentation/pages/share_stats_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(FuelLogModelAdapter());
   Hive.registerAdapter(LocationModelAdapter());
+  Hive.registerAdapter(MaintenanceLogModelAdapter());
 
   configureDependencies();
   runApp(const MyApp());
@@ -52,7 +55,19 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Car Care App')),
+      appBar: AppBar(
+        title: const Text('Car Care App'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ShareStatsPage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: const Center(child: Text('Car Care App Initialized')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
