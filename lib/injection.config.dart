@@ -9,10 +9,13 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
+import 'package:firebase_analytics/firebase_analytics.dart' as _i398;
+import 'package:firebase_performance/firebase_performance.dart' as _i346;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import 'core/config/firebase_module.dart' as _i819;
+import 'core/services/analytics_service.dart' as _i661;
 import 'core/services/location_service.dart' as _i65;
 import 'core/services/ocr_service.dart' as _i400;
 import 'features/logs/data/repositories/log_repository_impl.dart' as _i425;
@@ -31,9 +34,16 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final firebaseModule = _$FirebaseModule();
+    gh.lazySingleton<_i398.FirebaseAnalytics>(() => firebaseModule.analytics);
+    gh.lazySingleton<_i346.FirebasePerformance>(
+        () => firebaseModule.performance);
     gh.lazySingleton<_i974.FirebaseFirestore>(() => firebaseModule.firestore);
     gh.lazySingleton<_i65.LocationService>(() => _i65.LocationService());
     gh.lazySingleton<_i400.OCRService>(() => _i400.OCRService());
+    gh.singleton<_i661.AnalyticsService>(() => _i661.AnalyticsService(
+          gh<_i398.FirebaseAnalytics>(),
+          gh<_i346.FirebasePerformance>(),
+        ));
     gh.lazySingleton<_i349.LogRepository>(
         () => _i425.LogRepositoryImpl(gh<_i974.FirebaseFirestore>()));
     gh.factory<_i795.QuickLogBloc>(() => _i795.QuickLogBloc(

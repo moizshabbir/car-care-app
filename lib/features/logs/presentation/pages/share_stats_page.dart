@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../injection.dart';
 import '../../domain/log_stats_service.dart';
 import '../../domain/repositories/log_repository.dart';
@@ -38,6 +39,8 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
 
   Future<void> _shareCard(double costPerKm) async {
     try {
+      getIt<AnalyticsService>().logShareCardClicked();
+
       // Capture only the widget. We wrap in Material and Directionality for theme/text direction.
       final Uint8List image = await _screenshotController.captureFromWidget(
         Directionality(
