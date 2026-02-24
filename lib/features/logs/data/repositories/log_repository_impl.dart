@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../data/models/fuel_log_model.dart';
+import '../../data/models/maintenance_log_model.dart';
 import '../../domain/repositories/log_repository.dart';
 
 @LazySingleton(as: LogRepository)
@@ -15,8 +16,6 @@ class LogRepositoryImpl implements LogRepository {
   @override
   Future<void> addFuelLog(FuelLogModel log) async {
     // 1. Save to Hive (Local)
-    // Ideally, Hive boxes should be opened at app start.
-    // We check if open, otherwise open it.
     var box = Hive.isBoxOpen('fuel_logs')
         ? Hive.box<FuelLogModel>('fuel_logs')
         : await Hive.openBox<FuelLogModel>('fuel_logs');
@@ -62,5 +61,18 @@ class LogRepositoryImpl implements LogRepository {
     logs.sort((a, b) => b.odometer.compareTo(a.odometer));
 
     return logs.take(5).toList();
+  }
+
+  @override
+  Future<void> addMaintenanceLog(MaintenanceLogModel log) async {
+    // 1. Save to Hive (Local)
+    var box = Hive.isBoxOpen('maintenance_logs')
+        ? Hive.box<MaintenanceLogModel>('maintenance_logs')
+        : await Hive.openBox<MaintenanceLogModel>('maintenance_logs');
+
+    await box.put(log.id, log);
+
+    // 2. Save to Firestore (Remote)
+    await _firestore.collection('maintenance_logs').doc(log.id).set(log.toJson());
   }
 }
