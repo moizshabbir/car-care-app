@@ -61,7 +61,14 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
             return Stack(
               children: [
                 // 1. Camera Layer
-                if (state.cameraController != null && state.cameraController!.value.isInitialized)
+                if (state.status == QuickLogStatus.error)
+                  Center(
+                    child: Text(
+                      'Error: ${state.errorMessage ?? "Unknown"}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  )
+                else if (state.cameraController != null && state.cameraController!.value.isInitialized)
                   SizedBox.expand(
                     child: CameraPreview(state.cameraController!),
                   )
