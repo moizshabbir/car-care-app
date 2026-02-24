@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:car_care_app/firebase_options.dart';
 import 'package:car_care_app/injection.dart';
@@ -9,9 +8,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'core/theme/app_theme.dart';
 import 'features/logs/data/models/fuel_log_model.dart';
 import 'features/logs/data/models/location_model.dart';
 import 'features/logs/data/models/maintenance_log_model.dart';
+import 'features/logs/presentation/pages/add_expense_page.dart';
 import 'features/logs/presentation/pages/quick_log_page.dart';
 import 'features/logs/presentation/pages/share_stats_page.dart';
 
@@ -55,10 +56,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CarCareApp',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       home: const MainPage(),
     );
   }
@@ -86,11 +86,39 @@ class MainPage extends StatelessWidget {
       body: const Center(child: Text('Car Care App Initialized')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const QuickLogPage()),
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return SafeArea(
+                child: Wrap(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.local_gas_station),
+                      title: const Text('Log Fuel (Scan)'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const QuickLogPage()),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.receipt_long),
+                      title: const Text('Log Expense'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const AddExpensePage()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
           );
         },
-        child: const Icon(Icons.add_a_photo),
+        child: const Icon(Icons.add),
       ),
     );
   }
