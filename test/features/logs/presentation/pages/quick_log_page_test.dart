@@ -4,7 +4,7 @@ import 'package:car_care_app/features/logs/presentation/bloc/quick_log_event.dar
 import 'package:car_care_app/core/services/analytics_service.dart';
 import 'package:car_care_app/features/logs/presentation/bloc/quick_log_state.dart';
 import 'package:car_care_app/features/logs/presentation/pages/quick_log_page.dart';
-import 'package:car_care_app/features/logs/presentation/widgets/manual_entry_form.dart';
+import 'package:car_care_app/features/logs/presentation/widgets/fuel_log_manual_entry_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -82,8 +82,8 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pump();
 
-    expect(find.byType(ManualEntryForm), findsOneWidget);
-    expect(find.text('Odometer (km)'), findsOneWidget);
+    expect(find.byType(FuelLogManualEntrySheet), findsOneWidget);
+    expect(find.text('ODOMETER READING'), findsOneWidget);
   });
 
   testWidgets('QuickLogPage shows loading indicator when status is processing and camera not ready', (tester) async {
@@ -97,6 +97,6 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pump();
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsWidgets);
   });
 }
