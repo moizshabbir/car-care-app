@@ -12,9 +12,7 @@ import 'core/theme/app_theme.dart';
 import 'features/logs/data/models/fuel_log_model.dart';
 import 'features/logs/data/models/location_model.dart';
 import 'features/logs/data/models/maintenance_log_model.dart';
-import 'features/logs/presentation/pages/add_expense_page.dart';
-import 'features/logs/presentation/pages/quick_log_page.dart';
-import 'features/logs/presentation/pages/share_stats_page.dart';
+import 'features/logs/presentation/pages/dashboard_page.dart';
 
 void main() async {
   runZonedGuarded<Future<void>>(() async {
@@ -64,61 +62,60 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
   @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  int _selectedIndex = 0;
+
+  // Pages for bottom navigation
+  final List<Widget> _pages = [
+    const DashboardPage(),
+    const Scaffold(body: Center(child: Text('Garage'))),
+    const Scaffold(body: Center(child: Text('Reports'))),
+    const Scaffold(body: Center(child: Text('Settings'))),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // We wrap the body in a SafeArea if needed, but DashboardPage handles it via Scaffold/AppBar
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Car Care App'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const ShareStatsPage()),
-              );
-            },
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.directions_car),
+            label: 'Garage',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'Reports',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
-      ),
-      body: const Center(child: Text('Car Care App Initialized')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (BuildContext context) {
-              return SafeArea(
-                child: Wrap(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.local_gas_station),
-                      title: const Text('Log Fuel (Scan)'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => const QuickLogPage()),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.receipt_long),
-                      title: const Text('Log Expense'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => const AddExpensePage()),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        child: const Icon(Icons.add),
+        currentIndex: _selectedIndex,
+        selectedItemColor: AppTheme.primary,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: AppTheme.cardDark,
+        type: BottomNavigationBarType.fixed,
+        onTap: _onItemTapped,
       ),
     );
   }

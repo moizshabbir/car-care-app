@@ -75,4 +75,28 @@ class LogRepositoryImpl implements LogRepository {
     // 2. Save to Firestore (Remote)
     await _firestore.collection('maintenance_logs').doc(log.id).set(log.toJson());
   }
+
+  @override
+  Stream<List<FuelLogModel>> getFuelLogsStream() {
+    return _firestore
+        .collection('fuel_logs')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => FuelLogModel.fromJson(doc.data())).toList();
+    });
+  }
+
+  @override
+  Stream<List<MaintenanceLogModel>> getMaintenanceLogsStream() {
+    return _firestore
+        .collection('maintenance_logs')
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => MaintenanceLogModel.fromJson(doc.data()))
+          .toList();
+    });
+  }
 }
