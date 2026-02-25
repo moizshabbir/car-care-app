@@ -27,6 +27,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
   String? _initialOdometer;
   String? _initialLiters;
   String? _initialCost;
+  bool _isFormValid = false;
 
   @override
   void initState() {
@@ -40,14 +41,42 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
     _odometerController = TextEditingController(text: _initialOdometer);
     _litersController = TextEditingController(text: _initialLiters);
     _costController = TextEditingController(text: _initialCost);
+
+    _odometerController.addListener(_validateForm);
+    _litersController.addListener(_validateForm);
+    _costController.addListener(_validateForm);
+
+    _validateForm();
   }
 
   @override
   void dispose() {
+    _odometerController.removeListener(_validateForm);
+    _litersController.removeListener(_validateForm);
+    _costController.removeListener(_validateForm);
     _odometerController.dispose();
     _litersController.dispose();
     _costController.dispose();
     super.dispose();
+  }
+
+  void _validateForm() {
+    final odometer = int.tryParse(_odometerController.text);
+    final liters = double.tryParse(_litersController.text);
+    final cost = double.tryParse(_costController.text);
+
+    final isValid = odometer != null &&
+        odometer > 0 &&
+        liters != null &&
+        liters > 0 &&
+        cost != null &&
+        cost > 0;
+
+    if (_isFormValid != isValid) {
+      setState(() {
+        _isFormValid = isValid;
+      });
+    }
   }
 
   @override
@@ -179,15 +208,19 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          context.read<QuickLogBloc>().add(SaveLog(
-                            odometer: int.parse(_odometerController.text),
-                            liters: double.parse(_litersController.text),
-                            cost: double.parse(_costController.text),
-                          ));
-                        }
-                      },
+                      onPressed: _isFormValid
+                          ? () {
+                              if (_formKey.currentState!.validate()) {
+                                context.read<QuickLogBloc>().add(SaveLog(
+                                      odometer:
+                                          int.parse(_odometerController.text),
+                                      liters:
+                                          double.parse(_litersController.text),
+                                      cost: double.parse(_costController.text),
+                                    ));
+                              }
+                            }
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF135BEC),
                         shape: RoundedRectangleBorder(
