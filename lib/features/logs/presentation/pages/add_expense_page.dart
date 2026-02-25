@@ -24,45 +24,23 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   String _selectedCategory = 'Maintenance';
   DateTime _selectedDate = DateTime.now();
-  bool _isFormValid = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _costController.addListener(_validateForm);
-    _odometerController.addListener(_validateForm);
-  }
 
   @override
   void dispose() {
-    _costController.removeListener(_validateForm);
-    _odometerController.removeListener(_validateForm);
     _costController.dispose();
     _odometerController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
-  void _validateForm() {
-    final cost = double.tryParse(_costController.text);
-    final isCostValid = cost != null && cost > 0;
-
-    final odometerText = _odometerController.text;
-    final isOdometerValid =
-        odometerText.isEmpty || int.tryParse(odometerText) != null;
-
-    final isValid = isCostValid && isOdometerValid;
-
-    if (_isFormValid != isValid) {
-      setState(() {
-        _isFormValid = isValid;
-      });
-    }
-  }
-
   void _saveExpense(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      if (!_isFormValid) return;
+      if (_costController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a cost')),
+        );
+        return;
+      }
 
       final cost = double.tryParse(_costController.text);
       if (cost == null) {
@@ -353,7 +331,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _isFormValid ? () => _saveExpense(context) : null,
+                      onPressed: () => _saveExpense(context),
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

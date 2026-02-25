@@ -37,5 +37,6 @@ void main() {
     await tester.pump(); // Allow microtasks (Bloc initialization)
 
     expect(find.text('My Garage'), findsOneWidget);
+    expect(find.text('Toyota Camry'), findsOneWidget);
   });
 }
