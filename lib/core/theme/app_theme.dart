@@ -87,7 +87,7 @@ class AppTheme {
         onSecondary: Colors.white,
       ),
       scaffoldBackgroundColor: backgroundDark,
-      cardColor: surfaceDark,
+      cardColor: cardDark,
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.dark().textTheme,
       ).apply(
@@ -100,12 +100,20 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
       ),
+      cardTheme: CardThemeData(
+        color: cardDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        margin: EdgeInsets.zero,
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
@@ -114,15 +122,15 @@ class AppTheme {
         filled: true,
         fillColor: cardDark,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Color(0xFF334155)), // slate-700
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Color(0xFF334155)), // slate-700
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: primary, width: 2),
         ),
         labelStyle: const TextStyle(color: slate400),

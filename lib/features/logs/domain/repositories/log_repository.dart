@@ -5,4 +5,6 @@ abstract class LogRepository {
   Future<void> addFuelLog(FuelLogModel log);
   Future<List<FuelLogModel>> getRecentFuelLogs();
   Future<void> addMaintenanceLog(MaintenanceLogModel log);
+  Stream<List<FuelLogModel>> getFuelLogsStream();
+  Stream<List<MaintenanceLogModel>> getMaintenanceLogsStream();
 }
