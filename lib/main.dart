@@ -8,11 +8,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:intl/intl.dart';
+
 import 'core/theme/app_theme.dart';
 import 'features/logs/data/models/fuel_log_model.dart';
 import 'features/logs/data/models/location_model.dart';
 import 'features/logs/data/models/maintenance_log_model.dart';
-import 'features/logs/presentation/pages/dashboard_page.dart';
+import 'features/logs/domain/repositories/log_repository.dart';
+import 'features/logs/presentation/pages/add_expense_page.dart';
+import 'features/logs/presentation/pages/quick_log_page.dart';
+import 'features/logs/presentation/pages/share_stats_page.dart';
 
 void main() async {
   runZonedGuarded<Future<void>>(() async {
@@ -71,14 +76,19 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
+  late Future<List<FuelLogModel>> _recentLogsFuture;
 
-  // Pages for bottom navigation
-  final List<Widget> _pages = [
-    const DashboardPage(),
-    const Scaffold(body: Center(child: Text('Garage'))),
-    const Scaffold(body: Center(child: Text('Reports'))),
-    const Scaffold(body: Center(child: Text('Settings'))),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _refreshLogs();
+  }
+
+  void _refreshLogs() {
+    setState(() {
+      _recentLogsFuture = getIt<LogRepository>().getRecentFuelLogs();
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -88,9 +98,14 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    // We wrap the body in a SafeArea if needed, but DashboardPage handles it via Scaffold/AppBar
+    // Pages for BottomNavigationBar
+    final List<Widget> pages = [
+      _buildDashboard(),
+      const ShareStatsPage(),
+    ];
+
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -98,24 +113,98 @@ class _MainPageState extends State<MainPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car),
-            label: 'Garage',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+            label: 'Stats',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: AppTheme.primary,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: AppTheme.cardDark,
-        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).primaryColor,
         onTap: _onItemTapped,
+      ),
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return SafeArea(
+                      child: Wrap(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.local_gas_station),
+                            title: const Text('Log Fuel (Scan)'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.of(context)
+                                  .push(
+                                MaterialPageRoute(
+                                    builder: (context) => const QuickLogPage()),
+                              )
+                                  .then((_) {
+                                // Refresh logs when returning from QuickLogPage
+                                _refreshLogs();
+                              });
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.receipt_long),
+                            title: const Text('Log Expense'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.of(context)
+                                  .push(
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AddExpensePage()),
+                              )
+                                  .then((_) {
+                                // Refresh logs when returning from AddExpensePage
+                                _refreshLogs();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildDashboard() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+      ),
+      body: FutureBuilder<List<FuelLogModel>>(
+        future: _recentLogsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No logs yet. Add one!'));
+          }
+
+          final logs = snapshot.data!;
+          return ListView.builder(
+            itemCount: logs.length,
+            itemBuilder: (context, index) {
+              final log = logs[index];
+              return ListTile(
+                leading: const Icon(Icons.local_gas_station),
+                title: Text(DateFormat.yMMMd().format(log.timestamp)),
+                subtitle: Text('${log.liters.toStringAsFixed(1)}L @ \$${log.cost.toStringAsFixed(2)}'),
+                trailing: Text('${log.odometer} km'),
+              );
+            },
+          );
+        },
       ),
     );
   }
