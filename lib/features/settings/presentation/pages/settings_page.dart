@@ -12,13 +12,32 @@ class SettingsPage extends StatelessWidget {
         title: const Text('Settings', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: const Center(
-        child: Text(
-          'Settings & Profile\n(Coming Soon)',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontSize: 18),
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: const [
+          ListTile(
+            leading: Icon(Icons.person, color: Colors.white),
+            title: Text('Profile', style: TextStyle(color: Colors.white)),
+            trailing: Icon(Icons.chevron_right, color: Colors.grey),
+          ),
+          ListTile(
+            leading: Icon(Icons.notifications, color: Colors.white),
+            title: Text('Notifications', style: TextStyle(color: Colors.white)),
+            trailing: Icon(Icons.chevron_right, color: Colors.grey),
+          ),
+          ListTile(
+            leading: Icon(Icons.security, color: Colors.white),
+            title: Text('Privacy & Security', style: TextStyle(color: Colors.white)),
+            trailing: Icon(Icons.chevron_right, color: Colors.grey),
+          ),
+          ListTile(
+            leading: Icon(Icons.help, color: Colors.white),
+            title: Text('Help & Support', style: TextStyle(color: Colors.white)),
+            trailing: Icon(Icons.chevron_right, color: Colors.grey),
+          ),
+        ],
       ),
     );
   }

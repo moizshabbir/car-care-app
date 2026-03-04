@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/services/analytics_service.dart';
 import '../../../../injection.dart';
@@ -25,6 +26,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   String _selectedCategory = 'Maintenance';
   DateTime _selectedDate = DateTime.now();
+  String? _photoPath;
 
   @override
   void dispose() {
@@ -63,7 +65,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
         note: _notesController.text,
         date: _selectedDate,
         odometer: odometer,
-        photoPath: null,
+        photoPath: _photoPath,
         vehicleId: vehicleId,
       ));
     }
@@ -197,50 +199,84 @@ class _AddExpensePageState extends State<AddExpensePage> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Receipt Attachment (Placeholder)
-                        Container(
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                              style: BorderStyle.solid, // Dashed not directly supported by Border.all easily without CustomPaint or package, sticking to solid/light for now or DottedBorder if I had package
+                        // Receipt Attachment
+                        GestureDetector(
+                          onTap: () async {
+                            final picker = ImagePicker();
+                            final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                            if (pickedFile != null) {
+                              setState(() {
+                                _photoPath = pickedFile.path;
+                              });
+                            }
+                          },
+                          child: Container(
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                style: BorderStyle.solid,
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add_a_photo,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 32,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Attach Receipt / Bill',
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.center_focus_strong, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Auto-scan enabled',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                      ),
+                            child: Center(
+                              child: _photoPath != null
+                                  ? Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary, size: 32),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Receipt Attached',
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Tap to change',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.add_a_photo,
+                                          color: Theme.of(context).colorScheme.primary,
+                                          size: 32,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Attach Receipt / Bill',
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.center_focus_strong, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Auto-scan enabled',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ],
                             ),
                           ),
                         ),

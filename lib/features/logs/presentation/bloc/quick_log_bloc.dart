@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:uuid/uuid.dart';
 
@@ -29,6 +31,8 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
     on<CaptureImage>(_onCaptureImage);
     on<RetakeImage>(_onRetakeImage);
     on<ProcessImage>(_onProcessImage);
+    on<PickImageFromGallery>(_onPickImageFromGallery);
+    on<PickDocument>(_onPickDocument);
     on<SwitchToManual>(_onSwitchToManual);
     on<UpdateLogData>(_onUpdateLogData);
     on<SaveLog>(_onSaveLog);
@@ -82,6 +86,46 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
       emit(state.copyWith(
         status: QuickLogStatus.error,
         errorMessage: 'Failed to capture image: $e',
+      ));
+    }
+  }
+
+  Future<void> _onPickImageFromGallery(PickImageFromGallery event, Emitter<QuickLogState> emit) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        emit(state.copyWith(
+          status: QuickLogStatus.imageCaptured,
+          imageFile: XFile(pickedFile.path),
+        ));
+        add(ProcessImage());
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        status: QuickLogStatus.error,
+        errorMessage: 'Failed to pick image from gallery: $e',
+      ));
+    }
+  }
+
+  Future<void> _onPickDocument(PickDocument event, Emitter<QuickLogState> emit) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      );
+      if (result != null && result.files.single.path != null) {
+        emit(state.copyWith(
+          status: QuickLogStatus.imageCaptured,
+          imageFile: XFile(result.files.single.path!),
+        ));
+        add(ProcessImage());
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        status: QuickLogStatus.error,
+        errorMessage: 'Failed to pick document: $e',
       ));
     }
   }

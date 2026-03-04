@@ -15,6 +15,10 @@ class RetakeImage extends QuickLogEvent {}
 
 class ProcessImage extends QuickLogEvent {}
 
+class PickImageFromGallery extends QuickLogEvent {}
+
+class PickDocument extends QuickLogEvent {}
+
 class SwitchToManual extends QuickLogEvent {}
 
 class UpdateLogData extends QuickLogEvent {

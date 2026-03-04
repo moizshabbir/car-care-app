@@ -225,7 +225,10 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildActionButton(Icons.image),
+                              _buildActionButton(
+                                Icons.image,
+                                onPressed: () => context.read<QuickLogBloc>().add(PickImageFromGallery()),
+                              ),
                               const SizedBox(width: 40),
                               GestureDetector(
                                 onTap: () => context.read<QuickLogBloc>().add(CaptureImage()),
@@ -246,7 +249,10 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                                 ),
                               ),
                               const SizedBox(width: 40),
-                              _buildActionButton(Icons.receipt_long),
+                              _buildActionButton(
+                                Icons.receipt_long,
+                                onPressed: () => context.read<QuickLogBloc>().add(PickDocument()),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -355,15 +361,18 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildActionButton(IconData icon) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        shape: BoxShape.circle,
+  Widget _buildActionButton(IconData icon, {VoidCallback? onPressed}) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 24),
       ),
-      child: Icon(icon, color: Colors.white, size: 24),
     );
   }
 

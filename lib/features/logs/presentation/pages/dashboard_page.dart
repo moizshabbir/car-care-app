@@ -7,8 +7,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../injection.dart';
 import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/dashboard_bloc.dart';
+import 'add_expense_page.dart';
 import 'quick_log_page.dart';
 import 'share_stats_page.dart';
+import '../../../reports/presentation/pages/reports_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -151,7 +153,12 @@ class _DashboardViewState extends State<DashboardView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Recent Logs', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                    TextButton(onPressed: () {}, child: const Text('View All')),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsPage()));
+                      },
+                      child: const Text('View All'),
+                    ),
                   ],
                 ),
                 _buildRecentLogs(state),
@@ -163,10 +170,53 @@ class _DashboardViewState extends State<DashboardView> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QuickLogPage()));
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: AppTheme.cardDark,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (context) => SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), shape: BoxShape.circle),
+                        child: const Icon(Icons.document_scanner, color: AppTheme.primary),
+                      ),
+                      title: const Text('Magic Scan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('Auto-extract data from receipts', style: TextStyle(color: Colors.grey)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QuickLogPage()));
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), shape: BoxShape.circle),
+                        child: const Icon(Icons.receipt, color: Colors.orange),
+                      ),
+                      title: const Text('Add Expense', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('Manual entry for fuel or service', style: TextStyle(color: Colors.grey)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddExpensePage()));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
         },
         backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.qr_code_scanner, color: Colors.white),
+        child: const Icon(Icons.document_scanner, color: Colors.white),
       ),
     ));
   }

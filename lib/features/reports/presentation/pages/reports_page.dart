@@ -9,15 +9,16 @@ class ReportsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
-        title: const Text('Reports', style: TextStyle(color: Colors.white)),
+        title: const Text('Reports & History', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: const Center(
         child: Text(
-          'Reports & History\n(Coming Soon)',
+          'Detailed reports will appear here.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: Colors.white70, fontSize: 16),
         ),
       ),
     );

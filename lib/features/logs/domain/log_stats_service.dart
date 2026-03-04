@@ -39,4 +39,20 @@ class LogStatsService {
 
     return totalCost / distance;
   }
+
+  double calculateTotalSpent(List<FuelLogModel> inputLogs) {
+    return inputLogs.fold(0.0, (sum, log) => sum + log.cost);
+  }
+
+  double calculateTotalDistance(List<FuelLogModel> inputLogs) {
+    if (inputLogs.isEmpty) return 0.0;
+
+    final logs = List<FuelLogModel>.from(inputLogs);
+    logs.sort((a, b) => a.odometer.compareTo(b.odometer));
+
+    final minOdo = logs.first.odometer;
+    final maxOdo = logs.last.odometer;
+
+    return (maxOdo - minOdo).toDouble();
+  }
 }

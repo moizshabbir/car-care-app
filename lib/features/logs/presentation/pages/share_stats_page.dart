@@ -22,22 +22,29 @@ class ShareStatsPage extends StatefulWidget {
 class _ShareStatsPageState extends State<ShareStatsPage> {
   final ScreenshotController _screenshotController = ScreenshotController();
   final LogStatsService _statsService = LogStatsService();
-  late Future<double> _costPerKmFuture;
+  late Future<Map<String, double>> _statsFuture;
+
+  bool _includeTotalSpent = false;
+  bool _includeTotalDistance = false;
 
   @override
   void initState() {
     super.initState();
-    _costPerKmFuture = _calculateStats();
+    _statsFuture = _calculateStats();
   }
 
-  Future<double> _calculateStats() async {
+  Future<Map<String, double>> _calculateStats() async {
     // getIt<LogRepository>() returns the repository instance.
     // We assume the repository is registered in injection.dart
     final logs = await getIt<LogRepository>().getRecentFuelLogs();
-    return _statsService.calculateAverageCostPerKm(logs);
+    return {
+      'costPerKm': _statsService.calculateAverageCostPerKm(logs),
+      'totalSpent': _statsService.calculateTotalSpent(logs),
+      'totalDistance': _statsService.calculateTotalDistance(logs),
+    };
   }
 
-  Future<void> _shareCard(double costPerKm) async {
+  Future<void> _shareCard(double costPerKm, double? totalSpent, double? totalDistance) async {
     try {
       getIt<AnalyticsService>().logShareCardClicked();
 
@@ -47,7 +54,11 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
           textDirection: TextDirection.ltr,
           child: Material(
             type: MaterialType.transparency,
-            child: ViralShareCard(costPerKm: costPerKm),
+            child: ViralShareCard(
+              costPerKm: costPerKm,
+              totalSpent: totalSpent,
+              totalDistance: totalDistance,
+            ),
           ),
         ),
         delay: const Duration(milliseconds: 100),
@@ -76,35 +87,104 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Share Stats')),
-      body: Center(
-        child: FutureBuilder<double>(
-          future: _costPerKmFuture,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: FutureBuilder<Map<String, double>>(
+          future: _statsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
+              return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData) {
-              return const Text('No data available');
+              return const Center(child: Text('No data available'));
             }
 
-            // If we have data but it's 0, it might mean not enough logs.
-            // We still show the card, maybe with 0.00.
-            final costPerKm = snapshot.data!;
+            final data = snapshot.data!;
+            final costPerKm = data['costPerKm'] ?? 0.0;
+            final totalSpent = data['totalSpent'] ?? 0.0;
+            final totalDistance = data['totalDistance'] ?? 0.0;
+
+            final displayTotalSpent = _includeTotalSpent ? totalSpent : null;
+            final displayTotalDistance = _includeTotalDistance ? totalDistance : null;
 
             return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ViralShareCard(costPerKm: costPerKm),
+                const SizedBox(height: 16),
+                const Text(
+                  'Show off your efficiency! Customize your card below and share it with your friends.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
                 const SizedBox(height: 32),
-                ElevatedButton.icon(
-                  onPressed: () => _shareCard(costPerKm),
-                  icon: const Icon(Icons.share),
-                  label: const Text('Share'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                Center(
+                  child: ViralShareCard(
+                    costPerKm: costPerKm,
+                    totalSpent: displayTotalSpent,
+                    totalDistance: displayTotalDistance,
                   ),
                 ),
+                const SizedBox(height: 32),
+                const Text(
+                  'Customize Card',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: SwitchListTile(
+                    title: const Text('Include Total Spent', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    subtitle: const Text('Show amount spent on vehicle', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    value: _includeTotalSpent,
+                    activeColor: Colors.white,
+                    activeTrackColor: const Color(0xFF135BEC),
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), shape: BoxShape.circle),
+                      child: const Icon(Icons.payments, color: Colors.blue),
+                    ),
+                    onChanged: (val) => setState(() => _includeTotalSpent = val),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: SwitchListTile(
+                    title: const Text('Include Total Distance', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    subtitle: const Text('Show kilometers tracked', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    value: _includeTotalDistance,
+                    activeColor: Colors.white,
+                    activeTrackColor: const Color(0xFF135BEC),
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), shape: BoxShape.circle),
+                      child: const Icon(Icons.route, color: Colors.purple),
+                    ),
+                    onChanged: (val) => setState(() => _includeTotalDistance = val),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: () => _shareCard(costPerKm, displayTotalSpent, displayTotalDistance),
+                  icon: const Icon(Icons.ios_share),
+                  label: const Text('Share with Friends', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF135BEC),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 32),
               ],
             );
           },
