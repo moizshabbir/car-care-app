@@ -205,6 +205,7 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
         cost: event.cost,
         timestamp: DateTime.now(),
         location: location,
+        vehicleId: event.vehicleId,
       );
 
       await _logRepository.addFuelLog(log);

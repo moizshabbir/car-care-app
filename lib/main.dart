@@ -13,6 +13,13 @@ import 'features/logs/data/models/fuel_log_model.dart';
 import 'features/logs/data/models/location_model.dart';
 import 'features/logs/data/models/maintenance_log_model.dart';
 import 'features/logs/presentation/pages/dashboard_page.dart';
+import 'features/vehicles/data/models/vehicle_model.dart';
+import 'features/vehicles/presentation/bloc/vehicle_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'features/vehicles/presentation/pages/garage_page.dart';
+import 'features/reports/presentation/pages/reports_page.dart';
+import 'features/settings/presentation/pages/settings_page.dart';
 
 void main() async {
   runZonedGuarded<Future<void>>(() async {
@@ -41,6 +48,7 @@ void main() async {
     Hive.registerAdapter(FuelLogModelAdapter());
     Hive.registerAdapter(LocationModelAdapter());
     Hive.registerAdapter(MaintenanceLogModelAdapter());
+    Hive.registerAdapter(VehicleModelAdapter());
 
     configureDependencies();
     runApp(const MyApp());
@@ -52,12 +60,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CarCareApp',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      home: const MainPage(),
+    return BlocProvider(
+      create: (context) => getIt<VehicleBloc>()..add(LoadVehicles()),
+      child: MaterialApp(
+        title: 'CarCareApp',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
+        home: const MainPage(),
+      ),
     );
   }
 }
@@ -75,9 +86,9 @@ class _MainPageState extends State<MainPage> {
   // Pages for bottom navigation
   final List<Widget> _pages = [
     const DashboardPage(),
-    const Scaffold(body: Center(child: Text('Garage'))),
-    const Scaffold(body: Center(child: Text('Reports'))),
-    const Scaffold(body: Center(child: Text('Settings'))),
+    const GaragePage(),
+    const ReportsPage(),
+    const SettingsPage(),
   ];
 
   void _onItemTapped(int index) {

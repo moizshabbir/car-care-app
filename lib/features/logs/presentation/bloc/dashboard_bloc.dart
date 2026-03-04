@@ -30,13 +30,19 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   void _onSubscribeToLogs(SubscribeToLogs event, Emitter<DashboardState> emit) {
     emit(state.copyWith(status: DashboardStatus.loading));
 
+    final vehicleId = event.vehicleId;
+    if (vehicleId == null) {
+      emit(state.copyWith(status: DashboardStatus.loaded));
+      return;
+    }
+
     _fuelSubscription?.cancel();
-    _fuelSubscription = _logRepository.getFuelLogsStream().listen((logs) {
+    _fuelSubscription = _logRepository.getFuelLogsStream(vehicleId).listen((logs) {
       add(FuelLogsUpdated(logs));
     });
 
     _maintenanceSubscription?.cancel();
-    _maintenanceSubscription = _logRepository.getMaintenanceLogsStream().listen((logs) {
+    _maintenanceSubscription = _logRepository.getMaintenanceLogsStream(vehicleId).listen((logs) {
       add(MaintenanceLogsUpdated(logs));
     });
   }

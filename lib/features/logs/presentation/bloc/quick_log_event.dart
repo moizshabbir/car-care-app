@@ -32,9 +32,10 @@ class SaveLog extends QuickLogEvent {
   final int odometer;
   final double liters;
   final double cost;
+  final String? vehicleId;
 
-  const SaveLog({required this.odometer, required this.liters, required this.cost});
+  const SaveLog({required this.odometer, required this.liters, required this.cost, this.vehicleId});
 
   @override
-  List<Object?> get props => [odometer, liters, cost];
+  List<Object?> get props => [odometer, liters, cost, vehicleId];
 }

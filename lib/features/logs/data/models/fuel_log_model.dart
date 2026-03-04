@@ -28,6 +28,9 @@ class FuelLogModel {
   @HiveField(5)
   final LocationModel location;
 
+  @HiveField(6)
+  final String? vehicleId;
+
   FuelLogModel({
     required this.id,
     required this.odometer,
@@ -35,6 +38,7 @@ class FuelLogModel {
     required this.cost,
     required this.timestamp,
     required this.location,
+    this.vehicleId,
   });
 
   factory FuelLogModel.fromJson(Map<String, dynamic> json) =>

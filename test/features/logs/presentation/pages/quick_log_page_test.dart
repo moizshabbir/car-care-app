@@ -5,29 +5,37 @@ import 'package:car_care_app/core/services/analytics_service.dart';
 import 'package:car_care_app/features/logs/presentation/bloc/quick_log_state.dart';
 import 'package:car_care_app/features/logs/presentation/pages/quick_log_page.dart';
 import 'package:car_care_app/features/logs/presentation/widgets/fuel_log_manual_entry_sheet.dart';
+import 'package:car_care_app/features/vehicles/presentation/bloc/vehicle_bloc.dart';
+import 'package:car_care_app/features/vehicles/data/models/vehicle_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockQuickLogBloc extends MockBloc<QuickLogEvent, QuickLogState> implements QuickLogBloc {}
+class MockVehicleBloc extends MockBloc<VehicleEvent, VehicleState> implements VehicleBloc {}
 
 class FakeQuickLogEvent extends Fake implements QuickLogEvent {}
 
 class MockAnalyticsService extends Mock implements AnalyticsService {}
+class FakeVehicleEvent extends Fake implements VehicleEvent {}
 
 void main() {
   late MockQuickLogBloc mockBloc;
   late MockAnalyticsService mockAnalytics;
+  late MockVehicleBloc mockVehicleBloc;
 
   setUpAll(() {
     registerFallbackValue(FakeQuickLogEvent());
     registerFallbackValue(StartCamera());
+    registerFallbackValue(FakeVehicleEvent());
   });
 
   setUp(() {
     mockBloc = MockQuickLogBloc();
     mockAnalytics = MockAnalyticsService();
+    mockVehicleBloc = MockVehicleBloc();
 
     when(() => mockAnalytics.logLogStart()).thenAnswer((_) async {});
     when(() => mockAnalytics.startTimer(any())).thenAnswer((_) async {});
@@ -45,15 +53,28 @@ void main() {
     }
     getIt.registerFactory<QuickLogBloc>(() => mockBloc);
 
+    when(() => mockVehicleBloc.state).thenReturn(const VehicleState(status: VehicleStatus.loaded, vehicles: []));
+    when(() => mockVehicleBloc.stream).thenAnswer((_) => Stream.value(const VehicleState(status: VehicleStatus.loaded, vehicles: [])));
+    when(() => mockVehicleBloc.close()).thenAnswer((_) async {});
+    when(() => mockVehicleBloc.add(any())).thenReturn(null);
+
     if (getIt.isRegistered<AnalyticsService>()) {
       getIt.unregister<AnalyticsService>();
     }
     getIt.registerSingleton<AnalyticsService>(mockAnalytics);
+
+    if (getIt.isRegistered<VehicleBloc>()) {
+      getIt.unregister<VehicleBloc>();
+    }
+    getIt.registerFactory<VehicleBloc>(() => mockVehicleBloc);
   });
 
   Widget createWidgetUnderTest() {
-    return const MaterialApp(
-      home: QuickLogPage(),
+    return BlocProvider<VehicleBloc>.value(
+      value: mockVehicleBloc,
+      child: const MaterialApp(
+        home: QuickLogPage(),
+      ),
     );
   }
 

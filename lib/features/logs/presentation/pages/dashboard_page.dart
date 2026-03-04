@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../injection.dart';
+import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/dashboard_bloc.dart';
 import 'quick_log_page.dart';
 import 'share_stats_page.dart';
@@ -15,18 +16,37 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<DashboardBloc>()..add(SubscribeToLogs()),
+      create: (context) {
+        final bloc = getIt<DashboardBloc>();
+        final vehicleId = context.read<VehicleBloc>().state.selectedVehicle?.id;
+        if (vehicleId != null) {
+          bloc.add(SubscribeToLogs(vehicleId: vehicleId));
+        }
+        return bloc;
+      },
       child: const DashboardView(),
     );
   }
 }
 
-class DashboardView extends StatelessWidget {
+class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
 
   @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<DashboardView> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<VehicleBloc, VehicleState>(
+      listenWhen: (previous, current) => previous.selectedVehicle?.id != current.selectedVehicle?.id,
+      listener: (context, state) {
+        if (state.selectedVehicle != null) {
+          context.read<DashboardBloc>().add(SubscribeToLogs(vehicleId: state.selectedVehicle!.id));
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -38,16 +58,42 @@ class DashboardView extends StatelessWidget {
             child: const Icon(Icons.person, color: Colors.white),
           ),
         ),
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('My Garage', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Toyota Camry', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white),
-              ],
+            const Text('My Garage', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            BlocBuilder<VehicleBloc, VehicleState>(
+              builder: (context, vehicleState) {
+                if (vehicleState.status == VehicleStatus.loading) {
+                  return const Text('Loading...', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white));
+                }
+
+                if (vehicleState.vehicles.isEmpty) {
+                  return const Text('No Vehicles', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white));
+                }
+
+                return DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: vehicleState.selectedVehicle?.id,
+                    icon: const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white),
+                    dropdownColor: AppTheme.cardDark,
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    isDense: true,
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        final selected = vehicleState.vehicles.firstWhere((v) => v.id == newValue);
+                        context.read<VehicleBloc>().add(SelectVehicle(selected));
+                      }
+                    },
+                    items: vehicleState.vehicles.map<DropdownMenuItem<String>>((vehicle) {
+                      return DropdownMenuItem<String>(
+                        value: vehicle.id,
+                        child: Text(vehicle.name),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -122,7 +168,7 @@ class DashboardView extends StatelessWidget {
         backgroundColor: AppTheme.primary,
         child: const Icon(Icons.qr_code_scanner, color: Colors.white),
       ),
-    );
+    ));
   }
 
   Widget _buildOverviewCard(DashboardState state) {

@@ -2,7 +2,10 @@ part of 'dashboard_bloc.dart';
 
 abstract class DashboardEvent {}
 
-class SubscribeToLogs extends DashboardEvent {}
+class SubscribeToLogs extends DashboardEvent {
+  final String? vehicleId;
+  SubscribeToLogs({this.vehicleId});
+}
 
 class FuelLogsUpdated extends DashboardEvent {
   final List<FuelLogModel> logs;

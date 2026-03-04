@@ -29,6 +29,9 @@ class MaintenanceLogModel {
   @HiveField(6)
   final int? odometer;
 
+  @HiveField(7)
+  final String? vehicleId;
+
   MaintenanceLogModel({
     required this.id,
     required this.date,
@@ -37,6 +40,7 @@ class MaintenanceLogModel {
     required this.note,
     this.photoPath,
     this.odometer,
+    this.vehicleId,
   });
 
   factory MaintenanceLogModel.fromJson(Map<String, dynamic> json) =>

@@ -23,13 +23,14 @@ class FuelLogModelAdapter extends TypeAdapter<FuelLogModel> {
       cost: fields[3] as double,
       timestamp: fields[4] as DateTime,
       location: fields[5] as LocationModel,
+      vehicleId: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FuelLogModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class FuelLogModelAdapter extends TypeAdapter<FuelLogModel> {
       ..writeByte(4)
       ..write(obj.timestamp)
       ..writeByte(5)
-      ..write(obj.location);
+      ..write(obj.location)
+      ..writeByte(6)
+      ..write(obj.vehicleId);
   }
 
   @override
@@ -67,6 +70,7 @@ FuelLogModel _$FuelLogModelFromJson(Map<String, dynamic> json) => FuelLogModel(
       timestamp: FuelLogModel._fromJson(json['timestamp'] as Timestamp),
       location:
           LocationModel.fromJson(json['location'] as Map<String, dynamic>),
+      vehicleId: json['vehicleId'] as String?,
     );
 
 Map<String, dynamic> _$FuelLogModelToJson(FuelLogModel instance) =>
@@ -77,4 +81,5 @@ Map<String, dynamic> _$FuelLogModelToJson(FuelLogModel instance) =>
       'cost': instance.cost,
       'timestamp': FuelLogModel._toJson(instance.timestamp),
       'location': instance.location.toJson(),
+      'vehicleId': instance.vehicleId,
     };

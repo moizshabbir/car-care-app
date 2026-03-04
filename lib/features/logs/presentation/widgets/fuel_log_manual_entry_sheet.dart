@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/services/analytics_service.dart';
 import '../../../../injection.dart';
+import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/quick_log_bloc.dart';
 import '../bloc/quick_log_event.dart';
 import '../bloc/quick_log_state.dart';
@@ -181,10 +182,12 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
+                          final vehicleId = context.read<VehicleBloc>().state.selectedVehicle?.id;
                           context.read<QuickLogBloc>().add(SaveLog(
                             odometer: int.parse(_odometerController.text),
                             liters: double.parse(_litersController.text),
                             cost: double.parse(_costController.text),
+                            vehicleId: vehicleId,
                           ));
                         }
                       },

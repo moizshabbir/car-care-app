@@ -14,6 +14,7 @@ class SaveExpenseLog extends ExpenseLogEvent {
   final DateTime date;
   final int? odometer;
   final String? photoPath;
+  final String? vehicleId;
 
   const SaveExpenseLog({
     required this.cost,
@@ -22,8 +23,9 @@ class SaveExpenseLog extends ExpenseLogEvent {
     required this.date,
     this.odometer,
     this.photoPath,
+    this.vehicleId,
   });
 
   @override
-  List<Object?> get props => [cost, category, note, date, odometer, photoPath];
+  List<Object?> get props => [cost, category, note, date, odometer, photoPath, vehicleId];
 }

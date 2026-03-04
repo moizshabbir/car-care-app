@@ -25,6 +25,7 @@ class ExpenseLogBloc extends Bloc<ExpenseLogEvent, ExpenseLogState> {
         note: event.note,
         photoPath: event.photoPath,
         odometer: event.odometer,
+        vehicleId: event.vehicleId,
       );
 
       await _logRepository.addMaintenanceLog(log);

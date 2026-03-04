@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/services/analytics_service.dart';
 import '../../../../injection.dart';
+import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/expense_log_bloc.dart';
 import '../bloc/expense_log_event.dart';
 import '../bloc/expense_log_state.dart';
@@ -54,13 +55,16 @@ class _AddExpensePageState extends State<AddExpensePage> {
           ? int.tryParse(_odometerController.text)
           : null;
 
+      final vehicleId = context.read<VehicleBloc>().state.selectedVehicle?.id;
+
       context.read<ExpenseLogBloc>().add(SaveExpenseLog(
         cost: cost,
         category: _selectedCategory,
         note: _notesController.text,
         date: _selectedDate,
         odometer: odometer,
-        photoPath: null, // Image picking not implemented yet
+        photoPath: null,
+        vehicleId: vehicleId,
       ));
     }
   }

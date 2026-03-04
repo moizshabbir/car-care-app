@@ -77,9 +77,10 @@ class LogRepositoryImpl implements LogRepository {
   }
 
   @override
-  Stream<List<FuelLogModel>> getFuelLogsStream() {
+  Stream<List<FuelLogModel>> getFuelLogsStream(String vehicleId) {
     return _firestore
         .collection('fuel_logs')
+        .where('vehicleId', isEqualTo: vehicleId)
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
@@ -88,9 +89,10 @@ class LogRepositoryImpl implements LogRepository {
   }
 
   @override
-  Stream<List<MaintenanceLogModel>> getMaintenanceLogsStream() {
+  Stream<List<MaintenanceLogModel>> getMaintenanceLogsStream(String vehicleId) {
     return _firestore
         .collection('maintenance_logs')
+        .where('vehicleId', isEqualTo: vehicleId)
         .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
