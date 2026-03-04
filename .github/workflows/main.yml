@@ -31,6 +31,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: w9jds/firebase-action@master
         with:
-          args: upload --app ${{ secrets.FIREBASE_APP_ID }} --file build/app/outputs/flutter-apk/app-release.apk
+          #args: upload --app ${{ secrets.FIREBASE_APP_ID }} --file build/app/outputs/flutter-apk/app-release.apk
+          args: appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk --app ${{ secrets.FIREBASE_APP_ID }} --groups testers --release-notes "New release from GitHub Actions"
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
