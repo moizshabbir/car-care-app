@@ -34,4 +34,5 @@ jobs:
           #args: upload --app ${{ secrets.FIREBASE_APP_ID }} --file build/app/outputs/flutter-apk/app-release.apk
           args: appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk --app ${{ secrets.FIREBASE_APP_ID }} --groups testers --release-notes "New release from GitHub Actions"
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          #GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
