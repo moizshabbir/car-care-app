@@ -115,7 +115,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                         style: GoogleFonts.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(width: 48), // Spacer
@@ -142,7 +142,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                   style: GoogleFonts.inter(
                                     fontSize: 48,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.onBackground,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
@@ -150,13 +150,13 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                     focusedBorder: InputBorder.none,
                                     hintText: '0.00',
                                     hintStyle: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                                     ),
                                     prefixText: '\$ ',
                                     prefixStyle: TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                     ),
                                   ),
                                 ),
@@ -165,7 +165,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                 'Enter amount',
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
                             ],
@@ -179,7 +179,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -213,10 +213,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
                           child: Container(
                             height: 120,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                                 style: BorderStyle.solid,
                               ),
                             ),
@@ -239,7 +239,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                           'Tap to change',
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
-                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                           ),
                                         ),
                                       ],
@@ -264,13 +264,13 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(Icons.center_focus_strong, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                                            Icon(Icons.center_focus_strong, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                                             const SizedBox(width: 4),
                                             Text(
                                               'Auto-scan enabled',
                                               style: GoogleFonts.inter(
                                                 fontSize: 12,
-                                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                               ),
                                             ),
                                           ],
@@ -314,7 +314,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                   DateFormat.yMMMd().format(_selectedDate),
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
-                                    color: Theme.of(context).colorScheme.onBackground,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -361,7 +361,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
           bottomSheet: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
+              color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9),
               border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
             ),
             child: SafeArea(
@@ -410,7 +410,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
         style: GoogleFonts.inter(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -432,7 +432,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             color: isSelected ? Colors.transparent : theme.dividerColor,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: theme.colorScheme.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))]
               : [],
         ),
         child: Row(
@@ -440,7 +440,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             Icon(
               icon,
               size: 20,
-              color: isSelected ? Colors.white : theme.colorScheme.onSurface.withOpacity(0.7),
+              color: isSelected ? Colors.white : theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             const SizedBox(width: 8),
             Text(
@@ -448,7 +448,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withOpacity(0.7),
+                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ],

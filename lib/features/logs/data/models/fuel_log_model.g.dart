@@ -8,7 +8,7 @@ part of 'fuel_log_model.dart';
 
 class FuelLogModelAdapter extends TypeAdapter<FuelLogModel> {
   @override
-  final int typeId = 0;
+  final typeId = 0;
 
   @override
   FuelLogModel read(BinaryReader reader) {
@@ -18,19 +18,21 @@ class FuelLogModelAdapter extends TypeAdapter<FuelLogModel> {
     };
     return FuelLogModel(
       id: fields[0] as String,
-      odometer: fields[1] as int,
-      liters: fields[2] as double,
-      cost: fields[3] as double,
+      odometer: (fields[1] as num).toInt(),
+      liters: (fields[2] as num).toDouble(),
+      cost: (fields[3] as num).toDouble(),
       timestamp: fields[4] as DateTime,
       location: fields[5] as LocationModel,
       vehicleId: fields[6] as String?,
+      stationName: fields[7] as String?,
+      odometerPhotoPath: fields[8] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FuelLogModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +46,11 @@ class FuelLogModelAdapter extends TypeAdapter<FuelLogModel> {
       ..writeByte(5)
       ..write(obj.location)
       ..writeByte(6)
-      ..write(obj.vehicleId);
+      ..write(obj.vehicleId)
+      ..writeByte(7)
+      ..write(obj.stationName)
+      ..writeByte(8)
+      ..write(obj.odometerPhotoPath);
   }
 
   @override
@@ -63,15 +69,16 @@ class FuelLogModelAdapter extends TypeAdapter<FuelLogModel> {
 // **************************************************************************
 
 FuelLogModel _$FuelLogModelFromJson(Map<String, dynamic> json) => FuelLogModel(
-      id: json['id'] as String,
-      odometer: (json['odometer'] as num).toInt(),
-      liters: (json['liters'] as num).toDouble(),
-      cost: (json['cost'] as num).toDouble(),
-      timestamp: FuelLogModel._fromJson(json['timestamp'] as Timestamp),
-      location:
-          LocationModel.fromJson(json['location'] as Map<String, dynamic>),
-      vehicleId: json['vehicleId'] as String?,
-    );
+  id: json['id'] as String,
+  odometer: (json['odometer'] as num).toInt(),
+  liters: (json['liters'] as num).toDouble(),
+  cost: (json['cost'] as num).toDouble(),
+  timestamp: FuelLogModel._fromJson(json['timestamp'] as Timestamp),
+  location: LocationModel.fromJson(json['location'] as Map<String, dynamic>),
+  vehicleId: json['vehicleId'] as String?,
+  stationName: json['stationName'] as String?,
+  odometerPhotoPath: json['odometerPhotoPath'] as String?,
+);
 
 Map<String, dynamic> _$FuelLogModelToJson(FuelLogModel instance) =>
     <String, dynamic>{
@@ -82,4 +89,6 @@ Map<String, dynamic> _$FuelLogModelToJson(FuelLogModel instance) =>
       'timestamp': FuelLogModel._toJson(instance.timestamp),
       'location': instance.location.toJson(),
       'vehicleId': instance.vehicleId,
+      'stationName': instance.stationName,
+      'odometerPhotoPath': instance.odometerPhotoPath,
     };

@@ -8,7 +8,7 @@ part of 'maintenance_log_model.dart';
 
 class MaintenanceLogModelAdapter extends TypeAdapter<MaintenanceLogModel> {
   @override
-  final int typeId = 1;
+  final typeId = 1;
 
   @override
   MaintenanceLogModel read(BinaryReader reader) {
@@ -20,10 +20,10 @@ class MaintenanceLogModelAdapter extends TypeAdapter<MaintenanceLogModel> {
       id: fields[0] as String,
       date: fields[1] as DateTime,
       category: fields[2] as String,
-      cost: fields[3] as double,
+      cost: (fields[3] as num).toDouble(),
       note: fields[4] as String,
       photoPath: fields[5] as String?,
-      odometer: fields[6] as int?,
+      odometer: (fields[6] as num?)?.toInt(),
       vehicleId: fields[7] as String?,
     );
   }
@@ -78,14 +78,14 @@ MaintenanceLogModel _$MaintenanceLogModelFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$MaintenanceLogModelToJson(
-        MaintenanceLogModel instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'date': MaintenanceLogModel._toJson(instance.date),
-      'category': instance.category,
-      'cost': instance.cost,
-      'note': instance.note,
-      'photoPath': instance.photoPath,
-      'odometer': instance.odometer,
-      'vehicleId': instance.vehicleId,
-    };
+  MaintenanceLogModel instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'date': MaintenanceLogModel._toJson(instance.date),
+  'category': instance.category,
+  'cost': instance.cost,
+  'note': instance.note,
+  'photoPath': instance.photoPath,
+  'odometer': instance.odometer,
+  'vehicleId': instance.vehicleId,
+};

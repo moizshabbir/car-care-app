@@ -135,7 +135,7 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
                   decoration: BoxDecoration(
                     color: Colors.grey[900],
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: SwitchListTile(
                     title: const Text('Include Total Spent', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
@@ -145,7 +145,7 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
                     activeTrackColor: const Color(0xFF135BEC),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), shape: BoxShape.circle),
                       child: const Icon(Icons.payments, color: Colors.blue),
                     ),
                     onChanged: (val) => setState(() => _includeTotalSpent = val),
@@ -156,7 +156,7 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
                   decoration: BoxDecoration(
                     color: Colors.grey[900],
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: SwitchListTile(
                     title: const Text('Include Total Distance', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
@@ -166,7 +166,7 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
                     activeTrackColor: const Color(0xFF135BEC),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.1), shape: BoxShape.circle),
                       child: const Icon(Icons.route, color: Colors.purple),
                     ),
                     onChanged: (val) => setState(() => _includeTotalDistance = val),

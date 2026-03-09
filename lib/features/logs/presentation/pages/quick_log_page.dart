@@ -85,7 +85,7 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                     padding: const EdgeInsets.only(top: 50, left: 24, right: 24, bottom: 20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+                        colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -100,14 +100,14 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.1)),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                           ),
                           child: Text(
                             'MAGIC SCAN',
                             style: GoogleFonts.inter(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 1.0,
@@ -157,10 +157,10 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                                       child: Container(
                                         height: 2,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF135BEC).withOpacity(0.8),
+                                          color: const Color(0xFF135BEC).withValues(alpha: 0.8),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: const Color(0xFF135BEC).withOpacity(0.8),
+                                              color: const Color(0xFF135BEC).withValues(alpha: 0.8),
                                               blurRadius: 10,
                                               spreadRadius: 2,
                                             ),
@@ -177,9 +177,9 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: Colors.black.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -189,7 +189,7 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                                 Text(
                                   'Align receipt or dashboard',
                                   style: GoogleFonts.inter(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -212,7 +212,7 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                       padding: const EdgeInsets.only(bottom: 40, top: 24, left: 24, right: 24),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.transparent, Colors.black.withOpacity(0.8), Colors.black],
+                          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8), Colors.black],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           stops: const [0.0, 0.5, 1.0],
@@ -237,7 +237,7 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                                   height: 80,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white.withOpacity(0.3), width: 4),
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 4),
                                   ),
                                   padding: const EdgeInsets.all(4),
                                   child: Container(
@@ -263,7 +263,7 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
                             decoration: BoxDecoration(
                               color: const Color(0xFF111318),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                               boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 4))],
                             ),
                             child: Row(
@@ -352,9 +352,9 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Icon(icon, color: Colors.white, size: 24),
       ),
@@ -368,7 +368,7 @@ class _QuickLogPageState extends State<QuickLogPage> with SingleTickerProviderSt
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 24),

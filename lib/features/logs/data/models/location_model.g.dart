@@ -8,7 +8,7 @@ part of 'location_model.dart';
 
 class LocationModelAdapter extends TypeAdapter<LocationModel> {
   @override
-  final int typeId = 2;
+  final typeId = 2;
 
   @override
   LocationModel read(BinaryReader reader) {
@@ -17,8 +17,8 @@ class LocationModelAdapter extends TypeAdapter<LocationModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return LocationModel(
-      latitude: fields[0] as double,
-      longitude: fields[1] as double,
+      latitude: (fields[0] as num).toDouble(),
+      longitude: (fields[1] as num).toDouble(),
       timestamp: fields[2] as DateTime,
     );
   }

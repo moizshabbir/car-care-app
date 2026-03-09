@@ -1,4 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 // **************************************************************************
 // InjectableConfigGenerator
@@ -10,47 +11,82 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:cloud_firestore/cloud_firestore.dart' as _i974;
 import 'package:firebase_analytics/firebase_analytics.dart' as _i398;
+import 'package:firebase_auth/firebase_auth.dart' as _i59;
 import 'package:firebase_performance/firebase_performance.dart' as _i346;
 import 'package:get_it/get_it.dart' as _i174;
+import 'package:google_sign_in/google_sign_in.dart' as _i116;
 import 'package:injectable/injectable.dart' as _i526;
 
 import 'core/config/firebase_module.dart' as _i819;
 import 'core/services/analytics_service.dart' as _i661;
 import 'core/services/location_service.dart' as _i65;
 import 'core/services/ocr_service.dart' as _i400;
+import 'core/services/receipt_parser_service.dart' as _i729;
+import 'features/auth/data/repositories/auth_repository_impl.dart' as _i111;
+import 'features/auth/domain/repositories/auth_repository.dart' as _i1015;
+import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
 import 'features/logs/data/repositories/log_repository_impl.dart' as _i425;
 import 'features/logs/domain/repositories/log_repository.dart' as _i349;
+import 'features/logs/presentation/bloc/dashboard_bloc.dart' as _i958;
 import 'features/logs/presentation/bloc/quick_log_bloc.dart' as _i795;
+import 'features/vehicles/data/repositories/vehicle_repository_impl.dart'
+    as _i186;
+import 'features/vehicles/domain/repositories/vehicle_repository.dart' as _i737;
+import 'features/vehicles/presentation/bloc/vehicle_bloc.dart' as _i114;
 
 extension GetItInjectableX on _i174.GetIt {
-// initializes the registration of main-scope dependencies inside of GetIt
+  // initializes the registration of main-scope dependencies inside of GetIt
   _i174.GetIt init({
     String? environment,
     _i526.EnvironmentFilter? environmentFilter,
   }) {
-    final gh = _i526.GetItHelper(
-      this,
-      environment,
-      environmentFilter,
-    );
+    final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final firebaseModule = _$FirebaseModule();
     gh.lazySingleton<_i398.FirebaseAnalytics>(() => firebaseModule.analytics);
     gh.lazySingleton<_i346.FirebasePerformance>(
-        () => firebaseModule.performance);
+      () => firebaseModule.performance,
+    );
     gh.lazySingleton<_i974.FirebaseFirestore>(() => firebaseModule.firestore);
     gh.lazySingleton<_i65.LocationService>(() => _i65.LocationService());
     gh.lazySingleton<_i400.OCRService>(() => _i400.OCRService());
-    gh.singleton<_i661.AnalyticsService>(() => _i661.AnalyticsService(
-          gh<_i398.FirebaseAnalytics>(),
-          gh<_i346.FirebasePerformance>(),
-        ));
+    gh.lazySingleton<_i729.ReceiptParserService>(
+      () => _i729.ReceiptParserService(),
+    );
     gh.lazySingleton<_i349.LogRepository>(
-        () => _i425.LogRepositoryImpl(gh<_i974.FirebaseFirestore>()));
-    gh.factory<_i795.QuickLogBloc>(() => _i795.QuickLogBloc(
-          gh<_i400.OCRService>(),
-          gh<_i65.LocationService>(),
-          gh<_i349.LogRepository>(),
-        ));
+      () => _i425.LogRepositoryImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.lazySingleton<_i737.VehicleRepository>(
+      () => _i186.VehicleRepositoryImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.factory<_i114.VehicleBloc>(
+      () => _i114.VehicleBloc(gh<_i737.VehicleRepository>()),
+    );
+    gh.singleton<_i661.AnalyticsService>(
+      () => _i661.AnalyticsService(
+        gh<_i398.FirebaseAnalytics>(),
+        gh<_i346.FirebasePerformance>(),
+      ),
+    );
+    gh.lazySingleton<_i1015.AuthRepository>(
+      () => _i111.AuthRepositoryImpl(
+        gh<_i59.FirebaseAuth>(),
+        gh<_i116.GoogleSignIn>(),
+      ),
+    );
+    gh.factory<_i958.DashboardBloc>(
+      () => _i958.DashboardBloc(gh<_i349.LogRepository>()),
+    );
+    gh.factory<_i795.QuickLogBloc>(
+      () => _i795.QuickLogBloc(
+        gh<_i400.OCRService>(),
+        gh<_i65.LocationService>(),
+        gh<_i349.LogRepository>(),
+        gh<_i729.ReceiptParserService>(),
+      ),
+    );
+    gh.factory<_i363.AuthBloc>(
+      () => _i363.AuthBloc(gh<_i1015.AuthRepository>()),
+    );
     return this;
   }
 }

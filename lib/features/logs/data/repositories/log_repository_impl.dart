@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../data/models/fuel_log_model.dart';
@@ -74,6 +74,36 @@ class LogRepositoryImpl implements LogRepository {
 
     // 2. Save to Firestore (Remote)
     await _firestore.collection('maintenance_logs').doc(log.id).set(log.toJson());
+  }
+
+  @override
+  Future<List<MaintenanceLogModel>> getMaintenanceLogs() async {
+    var box = Hive.isBoxOpen('maintenance_logs')
+        ? Hive.box<MaintenanceLogModel>('maintenance_logs')
+        : await Hive.openBox<MaintenanceLogModel>('maintenance_logs');
+
+    List<MaintenanceLogModel> logs = box.values.toList();
+
+    if (logs.isEmpty) {
+      try {
+        final snapshot = await _firestore.collection('maintenance_logs')
+            .orderBy('date', descending: true)
+            .get();
+
+        logs = snapshot.docs.map((doc) => MaintenanceLogModel.fromJson(doc.data())).toList();
+
+        for (var log in logs) {
+          await box.put(log.id, log);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print("Error fetching maintenance logs from Firestore: $e");
+        }
+      }
+    }
+
+    logs.sort((a, b) => b.date.compareTo(a.date));
+    return logs;
   }
 
   @override

@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/ocr_service.dart';
+import '../../../../core/services/receipt_parser_service.dart';
 import '../../data/models/fuel_log_model.dart';
 import '../../data/models/location_model.dart';
 import '../../domain/repositories/log_repository.dart';
@@ -21,11 +22,13 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
   final OCRService _ocrService;
   final LocationService _locationService;
   final LogRepository _logRepository;
+  final ReceiptParserService _receiptParserService;
 
   QuickLogBloc(
     this._ocrService,
     this._locationService,
     this._logRepository,
+    this._receiptParserService,
   ) : super(const QuickLogState()) {
     on<StartCamera>(_onStartCamera);
     on<CaptureImage>(_onCaptureImage);
@@ -34,6 +37,7 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
     on<PickImageFromGallery>(_onPickImageFromGallery);
     on<PickDocument>(_onPickDocument);
     on<SwitchToManual>(_onSwitchToManual);
+    on<CaptureOdometerPhoto>(_onCaptureOdometerPhoto);
     on<UpdateLogData>(_onUpdateLogData);
     on<SaveLog>(_onSaveLog);
   }
@@ -132,11 +136,9 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
 
   Future<void> _onRetakeImage(RetakeImage event, Emitter<QuickLogState> emit) async {
     // Reset data but keep camera controller
-    // Using constructor to reset fields to null
     emit(QuickLogState(
       status: QuickLogStatus.cameraReady,
       cameraController: state.cameraController,
-      // imageFile, odometer, etc. will be null
     ));
   }
 
@@ -148,51 +150,102 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
     try {
       final inputImage = InputImage.fromFilePath(state.imageFile!.path);
       final recognizedText = await _ocrService.processImage(inputImage);
-
-      // Simple heuristic to extract numbers
       final text = recognizedText.text;
 
-      int? foundOdometer;
-      double? foundLiters;
-      double? foundCost;
+      // Detect receipt type
+      final receiptType = _receiptParserService.detectReceiptType(text);
 
-      // Regex for finding numbers (integer or float)
-      final RegExp numberRegExp = RegExp(r"(\d+(\.\d+)?)");
-      final matches = numberRegExp.allMatches(text);
-
-      List<double> numbers = [];
-      for (final match in matches) {
-        final val = double.tryParse(match.group(0)!);
-        if (val != null) {
-          numbers.add(val);
-        }
+      if (receiptType == ReceiptType.fuel) {
+        // Parse fuel receipt
+        final parsed = _receiptParserService.parseFuelReceipt(text);
+        emit(state.copyWith(
+          status: QuickLogStatus.review,
+          receiptType: receiptType,
+          stationName: parsed.stationName,
+          cost: parsed.totalAmount,
+          liters: parsed.liters,
+        ));
+      } else if (receiptType == ReceiptType.pos) {
+        // Parse POS receipt
+        final items = _receiptParserService.parsePOSReceipt(text);
+        final storeName = _receiptParserService.extractBusinessName(text);
+        emit(state.copyWith(
+          status: QuickLogStatus.review,
+          receiptType: receiptType,
+          stationName: storeName,
+          parsedPOSItems: items,
+        ));
+      } else if (receiptType == ReceiptType.mechanic) {
+        // Parse mechanic bill
+        final services = _receiptParserService.parseMechanicBill(text);
+        final mechanicName = _receiptParserService.extractBusinessName(text);
+        emit(state.copyWith(
+          status: QuickLogStatus.review,
+          receiptType: receiptType,
+          stationName: mechanicName,
+          parsedServiceItems: services,
+        ));
+      } else {
+        // Unknown receipt — try fuel parsing as fallback (original behavior)
+        final parsed = _receiptParserService.parseFuelReceipt(text);
+        emit(state.copyWith(
+          status: QuickLogStatus.review,
+          receiptType: ReceiptType.unknown,
+          stationName: parsed.stationName,
+          cost: parsed.totalAmount,
+          liters: parsed.liters,
+        ));
       }
-
-      // Sort numbers descending to prioritize larger numbers (likely Odometer/Cost)
-      numbers.sort((a, b) => b.compareTo(a));
-
-      // Very basic heuristic assignment
-      for (final num in numbers) {
-        if (num > 1000 && num % 1 == 0 && foundOdometer == null) {
-          foundOdometer = num.toInt();
-        } else if (foundCost == null) {
-           foundCost = num;
-        } else if (foundLiters == null) {
-          foundLiters = num;
-        }
-      }
-
-      emit(state.copyWith(
-        status: QuickLogStatus.review,
-        odometer: foundOdometer,
-        liters: foundLiters,
-        cost: foundCost,
-      ));
-
     } catch (e) {
       emit(state.copyWith(
         status: QuickLogStatus.error,
         errorMessage: 'OCR Processing failed: $e',
+      ));
+    }
+  }
+
+  Future<void> _onCaptureOdometerPhoto(CaptureOdometerPhoto event, Emitter<QuickLogState> emit) async {
+    if (state.cameraController == null || !state.cameraController!.value.isInitialized) {
+      return;
+    }
+
+    emit(state.copyWith(status: QuickLogStatus.capturing));
+
+    try {
+      final file = await state.cameraController!.takePicture();
+
+      // OCR the odometer photo
+      final inputImage = InputImage.fromFilePath(file.path);
+      final recognizedText = await _ocrService.processImage(inputImage);
+      final text = recognizedText.text;
+
+      // Extract odometer reading — look for the largest number
+      final RegExp numberRegExp = RegExp(r'(\d+)');
+      final matches = numberRegExp.allMatches(text);
+      int? foundOdometer;
+
+      List<int> numbers = [];
+      for (final match in matches) {
+        final val = int.tryParse(match.group(0)!);
+        if (val != null && val > 100) {
+          numbers.add(val);
+        }
+      }
+
+      if (numbers.isNotEmpty) {
+        numbers.sort((a, b) => b.compareTo(a));
+        foundOdometer = numbers.first;
+      }
+
+      emit(state.copyWith(
+        status: QuickLogStatus.review,
+        odometerPhotoPath: file.path,
+        odometer: foundOdometer,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: QuickLogStatus.error,
+        errorMessage: 'Failed to capture odometer: $e',
       ));
     }
   }
@@ -202,18 +255,11 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
   }
 
   Future<void> _onUpdateLogData(UpdateLogData event, Emitter<QuickLogState> emit) async {
-    // Only update fields that are provided (not null)
-    // Wait, if I want to clear a field, I can't pass null.
-    // But UI usually sends the current value.
-    // For now, assume UI handles state.
-
-    // Actually, copyWith merges.
-    // So if event.odometer is null, it keeps old value.
-    // That's fine for partial updates.
     emit(state.copyWith(
       odometer: event.odometer,
       liters: event.liters,
       cost: event.cost,
+      stationName: event.stationName,
     ));
   }
 
@@ -250,6 +296,8 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
         timestamp: DateTime.now(),
         location: location,
         vehicleId: event.vehicleId,
+        stationName: event.stationName,
+        odometerPhotoPath: event.odometerPhotoPath,
       );
 
       await _logRepository.addFuelLog(log);

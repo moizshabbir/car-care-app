@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'location_model.dart';
@@ -31,6 +31,12 @@ class FuelLogModel {
   @HiveField(6)
   final String? vehicleId;
 
+  @HiveField(7)
+  final String? stationName;
+
+  @HiveField(8)
+  final String? odometerPhotoPath;
+
   FuelLogModel({
     required this.id,
     required this.odometer,
@@ -39,6 +45,8 @@ class FuelLogModel {
     required this.timestamp,
     required this.location,
     this.vehicleId,
+    this.stationName,
+    this.odometerPhotoPath,
   });
 
   factory FuelLogModel.fromJson(Map<String, dynamic> json) =>

@@ -11,8 +11,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:car_care_app/core/services/receipt_parser_service.dart';
+
 // Generate mocks
-@GenerateMocks([LogRepository, LocationService, OCRService])
+@GenerateMocks([LogRepository, LocationService, OCRService, ReceiptParserService])
 import 'quick_log_bloc_test.mocks.dart';
 
 void main() {
@@ -20,12 +22,19 @@ void main() {
   late MockLogRepository mockLogRepository;
   late MockLocationService mockLocationService;
   late MockOCRService mockOCRService;
+  late MockReceiptParserService mockReceiptParserService;
 
   setUp(() {
     mockLogRepository = MockLogRepository();
     mockLocationService = MockLocationService();
     mockOCRService = MockOCRService();
-    bloc = QuickLogBloc(mockOCRService, mockLocationService, mockLogRepository);
+    mockReceiptParserService = MockReceiptParserService();
+    bloc = QuickLogBloc(
+      mockOCRService,
+      mockLocationService,
+      mockLogRepository,
+      mockReceiptParserService,
+    );
   });
 
   tearDown(() {

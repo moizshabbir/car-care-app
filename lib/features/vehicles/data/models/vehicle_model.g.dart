@@ -8,7 +8,7 @@ part of 'vehicle_model.dart';
 
 class VehicleModelAdapter extends TypeAdapter<VehicleModel> {
   @override
-  final int typeId = 2;
+  final typeId = 2;
 
   @override
   VehicleModel read(BinaryReader reader) {
@@ -21,7 +21,7 @@ class VehicleModelAdapter extends TypeAdapter<VehicleModel> {
       name: fields[1] as String,
       make: fields[2] as String,
       model: fields[3] as String,
-      year: fields[4] as int,
+      year: (fields[4] as num).toInt(),
     );
   }
 
@@ -57,12 +57,12 @@ class VehicleModelAdapter extends TypeAdapter<VehicleModel> {
 // **************************************************************************
 
 VehicleModel _$VehicleModelFromJson(Map<String, dynamic> json) => VehicleModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      make: json['make'] as String,
-      model: json['model'] as String,
-      year: (json['year'] as num).toInt(),
-    );
+  id: json['id'] as String,
+  name: json['name'] as String,
+  make: json['make'] as String,
+  model: json['model'] as String,
+  year: (json['year'] as num).toInt(),
+);
 
 Map<String, dynamic> _$VehicleModelToJson(VehicleModel instance) =>
     <String, dynamic>{

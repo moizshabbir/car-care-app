@@ -9,6 +9,8 @@ import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/dashboard_bloc.dart';
 import 'add_expense_page.dart';
 import 'quick_log_page.dart';
+import 'scan_receipt_page.dart';
+import 'scan_mechanic_bill_page.dart';
 import 'share_stats_page.dart';
 import '../../../reports/presentation/pages/reports_page.dart';
 
@@ -202,7 +204,7 @@ class _DashboardViewState extends State<DashboardView> {
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), shape: BoxShape.circle),
+                        decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
                         child: const Icon(Icons.document_scanner, color: AppTheme.primary),
                       ),
                       title: const Text('Magic Scan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -212,11 +214,39 @@ class _DashboardViewState extends State<DashboardView> {
                         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const QuickLogPage()));
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), shape: BoxShape.circle),
+                        decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        child: const Icon(Icons.receipt_long, color: Colors.green),
+                      ),
+                      title: const Text('Scan Store Receipt', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('Auto parts & accessories', style: TextStyle(color: Colors.grey)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ScanReceiptPage()));
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        child: const Icon(Icons.handyman, color: Colors.amber),
+                      ),
+                      title: const Text('Scan Mechanic Bill', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('Repair & maintenance records', style: TextStyle(color: Colors.grey)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ScanMechanicBillPage()));
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
                         child: const Icon(Icons.receipt, color: Colors.orange),
                       ),
                       title: const Text('Add Expense', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -250,7 +280,7 @@ class _DashboardViewState extends State<DashboardView> {
           end: Alignment.bottomRight,
           colors: [
             const Color(0xFF135BEC),
-            const Color(0xFF135BEC).withOpacity(0.8),
+            const Color(0xFF135BEC).withValues(alpha: 0.8),
           ],
         ),
       ),
@@ -270,7 +300,7 @@ class _DashboardViewState extends State<DashboardView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(DateFormat('MMM yyyy').format(DateTime.now()), style: const TextStyle(color: Colors.white, fontSize: 12)),
@@ -286,7 +316,7 @@ class _DashboardViewState extends State<DashboardView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Row(
@@ -318,7 +348,7 @@ class _DashboardViewState extends State<DashboardView> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -359,7 +389,7 @@ class _DashboardViewState extends State<DashboardView> {
               ],
             ),
           ),
-          Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+          Container(width: 1, height: 40, color: Colors.grey.withValues(alpha: 0.2)),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -410,7 +440,7 @@ class _DashboardViewState extends State<DashboardView> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: (log.type == LogType.fuel ? Colors.blue : Colors.orange).withOpacity(0.1),
+                  color: (log.type == LogType.fuel ? Colors.blue : Colors.orange).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
