@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'vehicle_model.g.dart';
 
-@HiveType(typeId: 2)
+@HiveType(typeId: 3)
 @JsonSerializable(explicitToJson: true)
 class VehicleModel extends Equatable {
   @HiveField(0)

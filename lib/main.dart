@@ -28,36 +28,47 @@ import 'features/settings/presentation/pages/settings_page.dart';
 void main() async {
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
-
+    debugPrint("Initializing Firebase...");
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+      debugPrint("Firebase initialized");
 
       // Pass all uncaught "fatal" errors from the framework to Crashlytics
-      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      FlutterError.onError = (details) {
+        FlutterError.dumpErrorToConsole(details);
+        FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+      };
       // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
       PlatformDispatcher.instance.onError = (error, stack) {
+        debugPrint('Async error: $error\n$stack');
         FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         return true;
       };
-    } catch (e) {
-      debugPrint("Firebase initialization failed: $e");
+    } catch (e, stack) {
+      debugPrint("Firebase initialization failed: $e\n$stack");
     }
 
     // Initialize Hive
+    debugPrint("Initializing Hive...");
     await Hive.initFlutter();
+    debugPrint("Hive initialized");
 
-    // Clear all Hive boxes for fresh start (testing mode)
-    // await Hive.deleteFromDisk();
-    
+    debugPrint("Registering Hive adapters...");
     Hive.registerAdapter(FuelLogModelAdapter());
     Hive.registerAdapter(LocationModelAdapter());
     Hive.registerAdapter(MaintenanceLogModelAdapter());
     Hive.registerAdapter(VehicleModelAdapter());
+    debugPrint("Hive adapters registered");
 
+    debugPrint("Configuring dependencies...");
     configureDependencies();
+    debugPrint("Dependencies configured");
+
+    debugPrint("Running runApp...");
     runApp(const MyApp());
+    debugPrint("runApp called");
   }, (error, stack) => FirebaseCrashlytics.instance.recordError(error, stack, fatal: true));
 }
 
