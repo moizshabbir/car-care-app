@@ -35,6 +35,9 @@ import 'features/vehicles/data/repositories/vehicle_repository_impl.dart'
 import 'features/vehicles/domain/repositories/vehicle_repository.dart' as _i737;
 import 'features/vehicles/presentation/bloc/vehicle_bloc.dart' as _i114;
 
+const String _test = 'test';
+const String _prod = 'prod';
+
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
   _i174.GetIt init({
@@ -42,30 +45,58 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
+    final mockFirebaseModule = _$MockFirebaseModule();
     final firebaseModule = _$FirebaseModule();
-    gh.lazySingleton<_i59.FirebaseAuth>(() => firebaseModule.firebaseAuth);
-    gh.lazySingleton<_i116.GoogleSignIn>(() => firebaseModule.googleSignIn);
-    gh.lazySingleton<_i398.FirebaseAnalytics>(() => firebaseModule.analytics);
-    gh.lazySingleton<_i346.FirebasePerformance>(
-      () => firebaseModule.performance,
-    );
-    gh.lazySingleton<_i974.FirebaseFirestore>(() => firebaseModule.firestore);
     gh.lazySingleton<_i65.LocationService>(() => _i65.LocationService());
     gh.lazySingleton<_i400.OCRService>(() => _i400.OCRService());
     gh.lazySingleton<_i729.ReceiptParserService>(
       () => _i729.ReceiptParserService(),
     );
-    gh.lazySingleton<_i737.VehicleRepository>(
-      () => _i186.VehicleRepositoryImpl(gh<_i974.FirebaseFirestore>()),
+    gh.lazySingleton<_i59.FirebaseAuth>(
+      () => mockFirebaseModule.firebaseAuth,
+      registerFor: {_test},
+    );
+    gh.lazySingleton<_i116.GoogleSignIn>(
+      () => mockFirebaseModule.googleSignIn,
+      registerFor: {_test},
+    );
+    gh.lazySingleton<_i398.FirebaseAnalytics>(
+      () => mockFirebaseModule.analytics,
+      registerFor: {_test},
+    );
+    gh.lazySingleton<_i346.FirebasePerformance>(
+      () => mockFirebaseModule.performance,
+      registerFor: {_test},
+    );
+    gh.lazySingleton<_i974.FirebaseFirestore>(
+      () => mockFirebaseModule.firestore,
+      registerFor: {_test},
+    );
+    gh.lazySingleton<_i59.FirebaseAuth>(
+      () => firebaseModule.firebaseAuth,
+      registerFor: {_prod},
+    );
+    gh.lazySingleton<_i116.GoogleSignIn>(
+      () => firebaseModule.googleSignIn,
+      registerFor: {_prod},
+    );
+    gh.lazySingleton<_i398.FirebaseAnalytics>(
+      () => firebaseModule.analytics,
+      registerFor: {_prod},
+    );
+    gh.lazySingleton<_i346.FirebasePerformance>(
+      () => firebaseModule.performance,
+      registerFor: {_prod},
+    );
+    gh.lazySingleton<_i974.FirebaseFirestore>(
+      () => firebaseModule.firestore,
+      registerFor: {_prod},
     );
     gh.lazySingleton<_i1015.AuthRepository>(
       () => _i111.AuthRepositoryImpl(
         gh<_i59.FirebaseAuth>(),
         gh<_i116.GoogleSignIn>(),
       ),
-    );
-    gh.factory<_i114.VehicleBloc>(
-      () => _i114.VehicleBloc(gh<_i737.VehicleRepository>()),
     );
     gh.singleton<_i661.AnalyticsService>(
       () => _i661.AnalyticsService(
@@ -93,8 +124,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i729.ReceiptParserService>(),
       ),
     );
+    gh.lazySingleton<_i737.VehicleRepository>(
+      () => _i186.VehicleRepositoryImpl(gh<_i974.FirebaseFirestore>()),
+    );
+    gh.factory<_i114.VehicleBloc>(
+      () => _i114.VehicleBloc(gh<_i737.VehicleRepository>()),
+    );
     return this;
   }
 }
+
+class _$MockFirebaseModule extends _i819.MockFirebaseModule {}
 
 class _$FirebaseModule extends _i819.FirebaseModule {}
