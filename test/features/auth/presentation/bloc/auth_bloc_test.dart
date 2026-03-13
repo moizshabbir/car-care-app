@@ -101,7 +101,7 @@ void main() {
           isA<AuthState>().having((s) => s.status, 'status', AuthStatus.loading),
           isA<AuthState>()
               .having((s) => s.status, 'status', AuthStatus.error)
-              .having((s) => s.errorMessage, 'errorMessage', 'Incorrect password'),
+              .having((s) => s.errorMessage, 'errorMessage', contains('Incorrect password')),
         ],
       );
 
@@ -150,7 +150,7 @@ void main() {
           isA<AuthState>().having((s) => s.status, 'status', AuthStatus.loading),
           isA<AuthState>()
               .having((s) => s.status, 'status', AuthStatus.error)
-              .having((s) => s.errorMessage, 'errorMessage', 'An account already exists with this email'),
+              .having((s) => s.errorMessage, 'errorMessage', contains('An account already exists with this email')),
         ],
       );
 
@@ -228,7 +228,7 @@ void main() {
           isA<AuthState>().having((s) => s.status, 'status', AuthStatus.loading),
           isA<AuthState>()
               .having((s) => s.status, 'status', AuthStatus.error)
-              .having((s) => s.errorMessage, 'errorMessage', 'No account found with this email'),
+              .having((s) => s.errorMessage, 'errorMessage', contains('No account found with this email')),
         ],
       );
 
@@ -277,7 +277,7 @@ void main() {
           isA<AuthState>().having((s) => s.status, 'status', AuthStatus.loading),
           isA<AuthState>()
               .having((s) => s.status, 'status', AuthStatus.error)
-              .having((s) => s.errorMessage, 'errorMessage', 'Google sign-in was cancelled'),
+              .having((s) => s.errorMessage, 'errorMessage', contains('Google sign-in was cancelled')),
         ],
       );
 
@@ -311,7 +311,7 @@ void main() {
           isA<AuthState>().having((s) => s.status, 'status', AuthStatus.loading),
           isA<AuthState>()
               .having((s) => s.status, 'status', AuthStatus.error)
-              .having((s) => s.errorMessage, 'errorMessage', 'Authentication failed (unknown-code). Please try again'),
+              .having((s) => s.errorMessage, 'errorMessage', contains('Authentication failed (unknown-code)')),
         ],
       );
     });

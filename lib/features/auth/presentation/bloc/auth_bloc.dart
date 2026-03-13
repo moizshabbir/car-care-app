@@ -57,7 +57,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on FirebaseAuthException catch (e) {
       emit(AuthState(
         status: AuthStatus.error,
-        errorMessage: _mapAuthError(e.code),
+        errorMessage: '${_mapAuthError(e.code)}: ${e.message ?? ""}',
       ));
     } catch (e) {
       emit(AuthState(
@@ -81,7 +81,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on FirebaseAuthException catch (e) {
       emit(AuthState(
         status: AuthStatus.error,
-        errorMessage: _mapAuthError(e.code),
+        errorMessage: '${_mapAuthError(e.code)}: ${e.message ?? ""}',
       ));
     } catch (e) {
       emit(AuthState(
@@ -101,7 +101,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on FirebaseAuthException catch (e) {
       emit(AuthState(
         status: AuthStatus.error,
-        errorMessage: _mapAuthError(e.code),
+        errorMessage: '${_mapAuthError(e.code)}: ${e.message ?? ""}',
       ));
     } catch (e) {
       emit(AuthState(
