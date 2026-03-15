@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -62,12 +63,21 @@ class GaragePage extends StatelessWidget {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        width: 56,
+                        height: 56,
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          color: AppTheme.primary.withOpacity(0.1),
                           shape: BoxShape.circle,
+                          image: vehicle.imagePath != null
+                              ? DecorationImage(
+                                  image: FileImage(File(vehicle.imagePath!)),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
-                        child: const Icon(Icons.directions_car, color: AppTheme.primary),
+                        child: vehicle.imagePath == null
+                            ? const Icon(Icons.directions_car, color: AppTheme.primary)
+                            : null,
                       ),
                       const SizedBox(width: 16),
                       Expanded(

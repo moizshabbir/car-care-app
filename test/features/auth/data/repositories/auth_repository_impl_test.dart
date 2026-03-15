@@ -90,26 +90,22 @@ void main() {
     });
 
     group('signInWithGoogle', () {
-      test('calls authenticate and signInWithCredential on success', () async {
-        when(mockGoogleSignIn.authenticate()).thenAnswer((_) async => mockGoogleUser);
-        when(mockGoogleUser.authentication).thenReturn(mockGoogleAuth);
-        when(mockGoogleUser.authorizationClient).thenReturn(mockGoogleAuthorizationClient);
-        when(mockGoogleAuthorizationClient.authorizationForScopes(any)).thenAnswer((_) async => mockGoogleClientAuth);
-        when(mockGoogleAuth.idToken).thenReturn('idToken');
-        when(mockGoogleClientAuth.accessToken).thenReturn('accessToken');
+      test('calls signIn and signInWithCredential on success', () async {
+        when((mockGoogleSignIn as dynamic).signIn()).thenAnswer((_) async => mockGoogleUser);
+        when((mockGoogleUser as dynamic).authentication).thenReturn(mockGoogleAuth);
+        when((mockGoogleAuth as dynamic).idToken).thenReturn('idToken');
+        when((mockGoogleAuth as dynamic).accessToken).thenReturn('accessToken');
         when(mockFirebaseAuth.signInWithCredential(any)).thenAnswer((_) async => mockUserCredential);
         
         await repository.signInWithGoogle();
-
-        verify(mockGoogleSignIn.authenticate()).called(1);
+ 
+        verify((mockGoogleSignIn as dynamic).signIn()).called(1);
         verify(mockFirebaseAuth.signInWithCredential(any)).called(1);
       });
-
+ 
       test('throws FirebaseAuthException when user cancels', () async {
-        when(mockGoogleSignIn.authenticate()).thenThrow(
-          GoogleSignInException(code: GoogleSignInExceptionCode.canceled),
-        );
-
+        when((mockGoogleSignIn as dynamic).signIn()).thenAnswer((_) async => null);
+ 
         expect(
           () => repository.signInWithGoogle(),
           throwsA(isA<FirebaseAuthException>().having((e) => e.code, 'code', 'google-sign-in-cancelled')),

@@ -197,7 +197,7 @@ class _ScanMechanicBillPageState extends State<ScanMechanicBillPage> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
+                color: Colors.orange.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(Icons.handyman, color: Colors.orange, size: 48),
@@ -255,7 +255,7 @@ class _ScanMechanicBillPageState extends State<ScanMechanicBillPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.1),
+              color: Colors.orange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(

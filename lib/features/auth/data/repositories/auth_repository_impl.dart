@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
@@ -40,27 +41,40 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserCredential> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
+      final dynamic googleUser = await (_googleSignIn as dynamic).signIn();
       if (googleUser == null) {
+        debugPrint("Google Sign-In cancelled by user.");
         throw FirebaseAuthException(
           code: 'google-sign-in-cancelled',
           message: 'Google sign-in was cancelled by user',
         );
       }
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      debugPrint("Google User obtained: ${googleUser.email}");
       
-      // In google_sign_in 7.x, accessToken is obtained via authorizationClient
-      final clientAuth = await googleUser.authorizationClient.authorizationForScopes([]);
+      final dynamic gAuth = googleUser.authentication;
+
+      debugPrint("Google Auth obtained. ID Token: ${gAuth.idToken != null ? 'Present' : 'NULL'}, Access Token: ${gAuth.accessToken != null ? 'Present' : 'NULL'}");
+      
+      if (gAuth.idToken == null && gAuth.accessToken == null) {
+        debugPrint("SEVERE: Both ID Token and Access Token are NULL. Check Google Cloud Console / Firebase configuration.");
+      }
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: clientAuth?.accessToken,
-        idToken: googleAuth.idToken,
+        accessToken: gAuth.accessToken,
+        idToken: gAuth.idToken,
       );
+      debugPrint("Firebase GoogleAuthProvider credential created.");
 
-      return await _firebaseAuth.signInWithCredential(credential);
-    } catch (e) {
-      if (e is FirebaseAuthException) rethrow;
+      debugPrint("Signing into Firebase with Google Credential...");
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      debugPrint("Firebase Sign-In successful. User UID: ${userCredential.user?.uid}");
+      return userCredential;
+    } catch (e, stack) {
+      debugPrint("Google Sign-In Error: $e");
+      debugPrint("Stack Trace: $stack");
+      if (e is FirebaseAuthException) {
+        rethrow;
+      }
       final errorMessage = e.toString().toLowerCase();
       if (errorMessage.contains('cancel') || errorMessage.contains('abort')) {
         throw FirebaseAuthException(
@@ -74,10 +88,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    await Future.wait([
-      _firebaseAuth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    await _googleSignIn.signOut();
+    await _firebaseAuth.signOut();
   }
 
   @override

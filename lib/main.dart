@@ -26,6 +26,8 @@ import 'features/vehicles/presentation/pages/onboarding_page.dart';
 import 'features/reports/presentation/pages/reports_page.dart';
 import 'features/settings/presentation/pages/settings_page.dart';
 
+import 'core/services/settings_service.dart';
+
 void main() async {
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -78,6 +80,10 @@ void main() async {
     debugPrint("Configuring dependencies...");
     configureDependencies();
     debugPrint("Dependencies configured");
+
+    debugPrint("Initializing SettingsService...");
+    await getIt<SettingsService>().init();
+    debugPrint("SettingsService initialized");
 
     debugPrint("Running runApp...");
     runApp(const MyApp());

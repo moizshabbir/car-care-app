@@ -22,13 +22,16 @@ import 'core/services/analytics_service.dart' as _i661;
 import 'core/services/location_service.dart' as _i65;
 import 'core/services/ocr_service.dart' as _i400;
 import 'core/services/receipt_parser_service.dart' as _i729;
+import 'core/services/settings_service.dart' as _i607;
 import 'features/auth/data/repositories/auth_repository_impl.dart' as _i111;
 import 'features/auth/domain/repositories/auth_repository.dart' as _i1015;
 import 'features/auth/presentation/bloc/auth_bloc.dart' as _i363;
+import 'features/logs/data/repositories/category_repository_impl.dart' as _i331;
 import 'features/logs/data/repositories/log_repository_impl.dart' as _i425;
+import 'features/logs/domain/repositories/category_repository.dart' as _i165;
 import 'features/logs/domain/repositories/log_repository.dart' as _i349;
+import 'features/logs/presentation/bloc/category_bloc.dart' as _i234;
 import 'features/logs/presentation/bloc/dashboard_bloc.dart' as _i958;
-import 'features/logs/presentation/bloc/expense_log_bloc.dart' as _i697;
 import 'features/logs/presentation/bloc/quick_log_bloc.dart' as _i795;
 import 'features/reports/presentation/bloc/reports_bloc.dart' as _i866;
 import 'features/vehicles/data/repositories/vehicle_repository_impl.dart'
@@ -52,6 +55,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i400.OCRService>(() => _i400.OCRService());
     gh.lazySingleton<_i729.ReceiptParserService>(
       () => _i729.ReceiptParserService(),
+    );
+    gh.lazySingleton<_i607.SettingsService>(
+      () => _i607.SettingsService(),
+      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i59.FirebaseAuth>(
       () => mockFirebaseModule.firebaseAuth,
@@ -105,12 +112,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i59.FirebaseAuth>(),
       ),
     );
-    gh.factory<_i697.ExpenseLogBloc>(
-      () => _i697.ExpenseLogBloc(
-        gh<_i349.LogRepository>(),
-        gh<_i59.FirebaseAuth>(),
-      ),
-    );
     gh.singleton<_i661.AnalyticsService>(
       () => _i661.AnalyticsService(
         gh<_i398.FirebaseAnalytics>(),
@@ -141,8 +142,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i59.FirebaseAuth>(),
       ),
     );
+    gh.lazySingleton<_i165.CategoryRepository>(
+      () => _i331.CategoryRepositoryImpl(
+        gh<_i974.FirebaseFirestore>(),
+        gh<_i59.FirebaseAuth>(),
+      ),
+    );
     gh.factory<_i114.VehicleBloc>(
       () => _i114.VehicleBloc(gh<_i737.VehicleRepository>()),
+    );
+    gh.factory<_i234.CategoryBloc>(
+      () => _i234.CategoryBloc(gh<_i165.CategoryRepository>()),
     );
     return this;
   }

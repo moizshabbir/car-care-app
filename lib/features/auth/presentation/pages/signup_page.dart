@@ -86,7 +86,7 @@ class _SignupPageState extends State<SignupPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF135BEC).withValues(alpha: 0.15),
+                        color: const Color(0xFF135BEC).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -217,13 +217,13 @@ class _SignupPageState extends State<SignupPage> {
                             backgroundColor: const Color(0xFF135BEC),
                             foregroundColor: Colors.white,
                             disabledBackgroundColor:
-                                const Color(0xFF135BEC).withValues(alpha: 0.5),
+                                const Color(0xFF135BEC).withOpacity(0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 4,
                             shadowColor:
-                                const Color(0xFF135BEC).withValues(alpha: 0.4),
+                                const Color(0xFF135BEC).withOpacity(0.4),
                           ),
                           child: state.status == AuthStatus.loading
                               ? const SizedBox(

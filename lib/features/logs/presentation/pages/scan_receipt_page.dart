@@ -200,7 +200,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.1),
+                color: AppTheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(Icons.receipt_long, color: AppTheme.primary, size: 48),
@@ -258,7 +258,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.1),
+              color: AppTheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(

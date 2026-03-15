@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:carlog/features/logs/presentation/bloc/quick_log_bloc.dart';
 import 'package:carlog/features/logs/presentation/bloc/quick_log_event.dart';
 import 'package:carlog/core/services/analytics_service.dart';
+import 'package:carlog/core/services/settings_service.dart';
 import 'package:carlog/features/logs/presentation/bloc/quick_log_state.dart';
 import 'package:carlog/features/logs/presentation/pages/quick_log_page.dart';
 import 'package:carlog/features/logs/presentation/widgets/fuel_log_manual_entry_sheet.dart';
@@ -19,11 +20,13 @@ class MockVehicleBloc extends MockBloc<VehicleEvent, VehicleState> implements Ve
 class FakeQuickLogEvent extends Fake implements QuickLogEvent {}
 
 class MockAnalyticsService extends Mock implements AnalyticsService {}
+class MockSettingsService extends Mock implements SettingsService {}
 class FakeVehicleEvent extends Fake implements VehicleEvent {}
 
 void main() {
   late MockQuickLogBloc mockBloc;
   late MockAnalyticsService mockAnalytics;
+  late MockSettingsService mockSettings;
   late MockVehicleBloc mockVehicleBloc;
 
   setUpAll(() {
@@ -35,11 +38,14 @@ void main() {
   setUp(() {
     mockBloc = MockQuickLogBloc();
     mockAnalytics = MockAnalyticsService();
+    mockSettings = MockSettingsService();
     mockVehicleBloc = MockVehicleBloc();
 
     when(() => mockAnalytics.logLogStart()).thenAnswer((_) async {});
     when(() => mockAnalytics.startTimer(any())).thenAnswer((_) async {});
     when(() => mockAnalytics.stopTimer(any())).thenAnswer((_) async {});
+
+    when(() => mockSettings.currency).thenReturn(r'$');
 
     // Use Stream.value to provide initial state, preventing hangs
     when(() => mockBloc.stream).thenAnswer((_) => Stream.value(const QuickLogState()));
@@ -62,6 +68,11 @@ void main() {
       getIt.unregister<AnalyticsService>();
     }
     getIt.registerSingleton<AnalyticsService>(mockAnalytics);
+
+    if (getIt.isRegistered<SettingsService>()) {
+      getIt.unregister<SettingsService>();
+    }
+    getIt.registerSingleton<SettingsService>(mockSettings);
 
     if (getIt.isRegistered<VehicleBloc>()) {
       getIt.unregister<VehicleBloc>();

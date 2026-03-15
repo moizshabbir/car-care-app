@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
+                          color: Colors.black.withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -205,13 +205,13 @@ class _LoginPageState extends State<LoginPage> {
                             backgroundColor: const Color(0xFF135BEC),
                             foregroundColor: Colors.white,
                             disabledBackgroundColor:
-                                const Color(0xFF135BEC).withValues(alpha: 0.5),
+                                const Color(0xFF135BEC).withOpacity(0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 4,
                             shadowColor:
-                                const Color(0xFF135BEC).withValues(alpha: 0.4),
+                                const Color(0xFF135BEC).withOpacity(0.4),
                           ),
                           child: state.status == AuthStatus.loading
                               ? const SizedBox(

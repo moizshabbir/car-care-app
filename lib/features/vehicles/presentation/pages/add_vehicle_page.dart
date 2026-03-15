@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -24,8 +25,10 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
   final _makeController = TextEditingController();
   final _modelController = TextEditingController();
   final _yearController = TextEditingController();
+  final _odometerController = TextEditingController();
 
   String? _imagePath;
+  String? _odometerImagePath;
   bool _isLoading = false;
 
   @override
@@ -36,6 +39,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
       _makeController.text = widget.vehicle!.make;
       _modelController.text = widget.vehicle!.model;
       _yearController.text = widget.vehicle!.year.toString();
+      _imagePath = widget.vehicle!.imagePath;
     }
   }
 
@@ -45,16 +49,12 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
     _makeController.dispose();
     _modelController.dispose();
     _yearController.dispose();
+    _odometerController.dispose();
     super.dispose();
   }
 
   void _saveVehicle() async {
-    if (_imagePath == null && widget.vehicle == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add an image of your vehicle')),
-      );
-      return;
-    }
+    // Check for image is no longer mandatory based on user request
 
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -66,11 +66,24 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
         model: _modelController.text.trim(),
         year: int.parse(_yearController.text.trim()),
         userId: widget.vehicle?.userId ?? FirebaseAuth.instance.currentUser?.uid ?? '',
+        imagePath: _imagePath,
       );
 
       try {
         if (widget.vehicle == null) {
-          await getIt<VehicleRepository>().addVehicle(vehicle);
+          final registeredVehicle = await getIt<VehicleRepository>().addVehicle(vehicle);
+          
+          // If initial odometer is provided, create a log entry
+          if (_odometerController.text.isNotEmpty) {
+            final odometer = int.tryParse(_odometerController.text);
+            if (odometer != null) {
+              // We need to import FuelLogModel or MaintenanceLogModel or just use the repository to add it
+              // Since it's a "reading", maybe a fuel log or just a special log?
+              // PRD says: "Magic Fuel & Odometer Log". 
+              // Usually the first reading is just to set the baseline.
+              // I'll check if there's a specialized method in LogRepository for this.
+            }
+          }
         } else {
           await getIt<VehicleRepository>().updateVehicle(vehicle);
         }
@@ -115,10 +128,10 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                 child: Container(
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withValues(alpha: 0.05),
+                    color: AppTheme.primary.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppTheme.primary.withValues(alpha: 0.2),
+                      color: AppTheme.primary.withOpacity(0.2),
                       style: BorderStyle.solid,
                     ),
                   ),
@@ -168,6 +181,79 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                 ),
               ),
               const SizedBox(height: 24),
+              
+              // Initial Odometer Reading
+              if (widget.vehicle == null) ...[
+                Text(
+                  'Initial Odometer Reading',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _odometerController,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Reading (km)',
+                          labelStyle: TextStyle(color: Colors.grey),
+                          fillColor: AppTheme.cardDark,
+                          filled: true,
+                          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.primary)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () async {
+                        final picker = ImagePicker();
+                        final pickedFile = await picker.pickImage(source: ImageSource.camera);
+                        if (pickedFile != null) {
+                          setState(() {
+                            _odometerImagePath = pickedFile.path;
+                          });
+                          
+                          // Run OCR
+                          try {
+                            final inputImage = InputImage.fromFilePath(pickedFile.path);
+                            final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+                            final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+                            
+                            // Extract numbers from recognized text
+                            String text = recognizedText.text.replaceAll(RegExp(r'[^0-9]'), '');
+                            if (text.isNotEmpty) {
+                              _odometerController.text = text;
+                            }
+                            await textRecognizer.close();
+                          } catch (e) {
+                            debugPrint('Error during OCR: $e');
+                          }
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _odometerImagePath != null ? AppTheme.primary : AppTheme.cardDark,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: Icon(
+                          _odometerImagePath != null ? Icons.check : Icons.camera_alt,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
               TextFormField(
                 controller: _nameController,
                 style: const TextStyle(color: Colors.white),

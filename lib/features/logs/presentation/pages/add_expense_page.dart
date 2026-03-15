@@ -7,9 +7,14 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../injection.dart';
 import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
+import '../../data/models/category_model.dart';
+import '../bloc/category_bloc.dart';
+import '../bloc/category_event.dart';
+import '../bloc/category_state.dart';
 import '../bloc/expense_log_bloc.dart';
 import '../bloc/expense_log_event.dart';
 import '../bloc/expense_log_state.dart';
+import '../../../../core/services/settings_service.dart';
 
 class AddExpensePage extends StatefulWidget {
   const AddExpensePage({super.key});
@@ -24,9 +29,14 @@ class _AddExpensePageState extends State<AddExpensePage> {
   final TextEditingController _odometerController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
-  String _selectedCategory = 'Maintenance';
+  String _selectedCategory = 'General';
   DateTime _selectedDate = DateTime.now();
   String? _photoPath;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -73,9 +83,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Inject Bloc manually since getIt factory is registered
-    return BlocProvider(
-      create: (context) => getIt<ExpenseLogBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => getIt<ExpenseLogBloc>()),
+        BlocProvider(create: (context) => getIt<CategoryBloc>()..add(LoadCategories())),
+      ],
       child: BlocListener<ExpenseLogBloc, ExpenseLogState>(
         listener: (context, state) {
           if (state.status == ExpenseLogStatus.saved) {
@@ -150,13 +162,13 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                     focusedBorder: InputBorder.none,
                                     hintText: '0.00',
                                     hintStyle: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                                     ),
-                                    prefixText: '\$ ',
+                                    prefixText: '${getIt<SettingsService>().currency} ',
                                     prefixStyle: TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                     ),
                                   ),
                                 ),
@@ -165,7 +177,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                 'Enter amount',
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                 ),
                               ),
                             ],
@@ -179,23 +191,28 @@ class _AddExpensePageState extends State<AddExpensePage> {
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ),
                         const SizedBox(height: 12),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              _buildCategoryChip('Repair', Icons.build),
-                              const SizedBox(width: 12),
-                              _buildCategoryChip('Maintenance', Icons.car_repair),
-                              const SizedBox(width: 12),
-                              _buildCategoryChip('Insurance', Icons.security),
-                              const SizedBox(width: 12),
-                              _buildCategoryChip('Misc', Icons.more_horiz),
-                            ],
-                          ),
+                        BlocBuilder<CategoryBloc, CategoryState>(
+                          builder: (context, state) {
+                            if (state.status == CategoryStatus.loading) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  ...state.categories.map((cat) => Padding(
+                                    padding: const EdgeInsets.only(right: 12),
+                                    child: _buildCategoryChip(cat.name, IconData(cat.iconCodePoint, fontFamily: 'MaterialIcons')),
+                                  )),
+                                  _buildAddCategoryChip(context),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 32),
 
@@ -213,10 +230,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
                           child: Container(
                             height: 120,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                                 style: BorderStyle.solid,
                               ),
                             ),
@@ -239,7 +256,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                           'Tap to change',
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                           ),
                                         ),
                                       ],
@@ -264,13 +281,13 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(Icons.center_focus_strong, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                                            Icon(Icons.center_focus_strong, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                                             const SizedBox(width: 4),
                                             Text(
                                               'Auto-scan enabled',
                                               style: GoogleFonts.inter(
                                                 fontSize: 12,
-                                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                               ),
                                             ),
                                           ],
@@ -311,7 +328,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                 Icon(Icons.calendar_today, color: Theme.of(context).hintColor),
                                 const SizedBox(width: 12),
                                 Text(
-                                  DateFormat.yMMMd().format(_selectedDate),
+                                  DateFormat(getIt<SettingsService>().dateFormat).format(_selectedDate),
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
                                     color: Theme.of(context).colorScheme.onSurface,
@@ -361,7 +378,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
           bottomSheet: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9),
+              color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
               border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
             ),
             child: SafeArea(
@@ -410,8 +427,75 @@ class _AddExpensePageState extends State<AddExpensePage> {
         style: GoogleFonts.inter(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         ),
+      ),
+    );
+  }
+
+  IconData _getIconForCategory(String category) {
+    switch (category) {
+      case 'General': return Icons.category;
+      case 'Maintenance': return Icons.car_repair;
+      case 'Repair': return Icons.build;
+      case 'Insurance': return Icons.security;
+      case 'Fuel': return Icons.local_gas_station;
+      case 'Misc': return Icons.more_horiz;
+      default: return Icons.label_important;
+    }
+  }
+
+  Widget _buildAddCategoryChip(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showAddCategoryDialog(context),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: Theme.of(context).dividerColor),
+        ),
+        child: Icon(
+          Icons.add,
+          size: 20,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    );
+  }
+
+  void _showAddCategoryDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Add Category'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Category Name'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                context.read<CategoryBloc>().add(AddUserCategory(
+                  name: controller.text,
+                  iconCodePoint: Icons.label.codePoint,
+                ));
+                setState(() {
+                  _selectedCategory = controller.text;
+                });
+                Navigator.pop(dialogContext);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
   }
@@ -432,7 +516,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             color: isSelected ? Colors.transparent : theme.dividerColor,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: theme.colorScheme.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
               : [],
         ),
         child: Row(
@@ -440,7 +524,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             Icon(
               icon,
               size: 20,
-              color: isSelected ? Colors.white : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              color: isSelected ? Colors.white : theme.colorScheme.onSurface.withOpacity(0.7),
             ),
             const SizedBox(width: 8),
             Text(
@@ -448,7 +532,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                color: isSelected ? Colors.white : theme.colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
           ],

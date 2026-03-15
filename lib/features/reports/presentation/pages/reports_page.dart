@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/services/settings_service.dart';
 import '../../../../injection.dart';
 import '../../../logs/data/models/fuel_log_model.dart';
 import '../../../logs/data/models/maintenance_log_model.dart';
@@ -104,7 +105,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
         children: [
           Expanded(child: _summaryCard(
             'Total Spent',
-            '₹${NumberFormat('#,##0').format(totalFuelCost + totalMaintenanceCost)}',
+            '${getIt<SettingsService>().currency}${NumberFormat('#,##0').format(totalFuelCost + totalMaintenanceCost)}',
             Icons.account_balance_wallet,
             AppTheme.primary,
           )),
@@ -133,7 +134,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
       decoration: BoxDecoration(
         color: AppTheme.cardDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Column(
         children: [
@@ -171,7 +172,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blue.withValues(alpha: 0.15), Colors.blue.withValues(alpha: 0.05)],
+              colors: [Colors.blue.withOpacity(0.15), Colors.blue.withOpacity(0.05)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -180,11 +181,11 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _miniStat('Total', '₹${NumberFormat('#,##0').format(totalCost)}'),
+               _miniStat('Total', '${getIt<SettingsService>().currency}${NumberFormat('#,##0').format(totalCost)}'),
               Container(width: 1, height: 40, color: Colors.grey[700]),
               _miniStat('Liters', '${totalLiters.toStringAsFixed(1)} L'),
               Container(width: 1, height: 40, color: Colors.grey[700]),
-              _miniStat('Avg/Fill', '₹${avgCostPerFill.toStringAsFixed(0)}'),
+               _miniStat('Avg/Fill', '${getIt<SettingsService>().currency}${avgCostPerFill.toStringAsFixed(0)}'),
             ],
           ),
         ),
@@ -219,7 +220,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
+              color: Colors.blue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.local_gas_station, color: Colors.blue, size: 22),
@@ -244,13 +245,13 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('₹${log.cost.toStringAsFixed(0)}', style: GoogleFonts.inter(
+              Text('${getIt<SettingsService>().currency}${log.cost.toStringAsFixed(0)}', style: GoogleFonts.inter(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               )),
               const SizedBox(height: 4),
-              Text(DateFormat('MMM dd, yyyy').format(log.timestamp), style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+               Text(DateFormat(getIt<SettingsService>().dateFormat).format(log.timestamp), style: TextStyle(color: Colors.grey[500], fontSize: 12)),
             ],
           ),
         ],
@@ -288,7 +289,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.1),
+              color: Colors.orange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.build, color: Colors.orange, size: 22),
@@ -309,13 +310,13 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('₹${log.cost.toStringAsFixed(0)}', style: GoogleFonts.inter(
+              Text('${getIt<SettingsService>().currency}${log.cost.toStringAsFixed(0)}', style: GoogleFonts.inter(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               )),
               const SizedBox(height: 4),
-              Text(DateFormat('MMM dd, yyyy').format(log.date), style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+               Text(DateFormat(getIt<SettingsService>().dateFormat).format(log.date), style: TextStyle(color: Colors.grey[500], fontSize: 12)),
             ],
           ),
         ],
@@ -339,7 +340,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.green.withValues(alpha: 0.15), Colors.green.withValues(alpha: 0.05)],
+              colors: [Colors.green.withOpacity(0.15), Colors.green.withOpacity(0.05)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -348,8 +349,8 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total Parts Spent', style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400])),
-              Text('₹${NumberFormat('#,##0').format(totalPartsCost)}', style: GoogleFonts.inter(
+               Text('Total Parts Spent', style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400])),
+              Text('${getIt<SettingsService>().currency}${NumberFormat('#,##0').format(totalPartsCost)}', style: GoogleFonts.inter(
                 fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white,
               )),
             ],
@@ -370,7 +371,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
+                  color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.shopping_cart, color: Colors.green, size: 22),
@@ -382,11 +383,11 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                   children: [
                     Text(log.note ?? 'Car Part', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
                    const SizedBox(height: 4),
-                    Text(DateFormat('MMM dd, yyyy').format(log.date), style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                     Text(DateFormat(getIt<SettingsService>().dateFormat).format(log.date), style: TextStyle(color: Colors.grey[400], fontSize: 13)),
                   ],
                 ),
               ),
-              Text('₹${log.cost.toStringAsFixed(0)}', style: GoogleFonts.inter(
+              Text('${getIt<SettingsService>().currency}${log.cost.toStringAsFixed(0)}', style: GoogleFonts.inter(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,

@@ -3,6 +3,7 @@
 // Check in to version control
 
 import 'package:hive_ce/hive_ce.dart';
+import 'package:carlog/features/logs/data/models/category_model.dart';
 import 'package:carlog/features/logs/data/models/fuel_log_model.dart';
 import 'package:carlog/features/logs/data/models/location_model.dart';
 import 'package:carlog/features/logs/data/models/maintenance_log_model.dart';
@@ -10,6 +11,7 @@ import 'package:carlog/features/vehicles/data/models/vehicle_model.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(CategoryModelAdapter());
     registerAdapter(FuelLogModelAdapter());
     registerAdapter(LocationModelAdapter());
     registerAdapter(MaintenanceLogModelAdapter());
@@ -19,6 +21,7 @@ extension HiveRegistrar on HiveInterface {
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(CategoryModelAdapter());
     registerAdapter(FuelLogModelAdapter());
     registerAdapter(LocationModelAdapter());
     registerAdapter(MaintenanceLogModelAdapter());

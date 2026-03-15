@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/services/settings_service.dart';
 import '../../../../injection.dart';
 import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/dashboard_bloc.dart';
@@ -57,9 +59,19 @@ class _DashboardViewState extends State<DashboardView> {
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            backgroundColor: Colors.grey[800],
-            child: const Icon(Icons.person, color: Colors.white),
+          child: BlocBuilder<VehicleBloc, VehicleState>(
+            builder: (context, state) {
+              final vehicle = state.selectedVehicle;
+              if (vehicle?.imagePath != null) {
+                return CircleAvatar(
+                  backgroundImage: FileImage(File(vehicle!.imagePath!)),
+                );
+              }
+              return CircleAvatar(
+                backgroundColor: Colors.grey[800],
+                child: const Icon(Icons.person, color: Colors.white),
+              );
+            },
           ),
         ),
         title: Column(
@@ -149,7 +161,7 @@ class _DashboardViewState extends State<DashboardView> {
                     Expanded(
                         child: _buildStatCard(
                       title: 'Total Fuel',
-                      value: NumberFormat.simpleCurrency().format(state.totalFuelCost),
+                      value: NumberFormat.currency(symbol: getIt<SettingsService>().currency, decimalDigits: 0).format(state.totalFuelCost),
                       trend: '+5%', // Dummy trend
                       icon: Icons.local_gas_station,
                       iconColor: Colors.orange,
@@ -158,8 +170,8 @@ class _DashboardViewState extends State<DashboardView> {
                     Expanded(
                         child: _buildStatCard(
                       title: 'Last Service',
-                      value: NumberFormat.simpleCurrency().format(state.lastServiceCost),
-                      subtext: state.lastServiceDate != null ? DateFormat('MMM dd').format(state.lastServiceDate!) : 'N/A',
+                      value: NumberFormat.currency(symbol: getIt<SettingsService>().currency, decimalDigits: 0).format(state.lastServiceCost),
+                      subtext: state.lastServiceDate != null ? DateFormat(getIt<SettingsService>().dateFormat).format(state.lastServiceDate!) : 'N/A',
                       icon: Icons.build,
                       iconColor: Colors.purple,
                     )),
@@ -204,7 +216,7 @@ class _DashboardViewState extends State<DashboardView> {
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), shape: BoxShape.circle),
                         child: const Icon(Icons.document_scanner, color: AppTheme.primary),
                       ),
                       title: const Text('Magic Scan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -218,7 +230,7 @@ class _DashboardViewState extends State<DashboardView> {
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), shape: BoxShape.circle),
                         child: const Icon(Icons.receipt_long, color: Colors.green),
                       ),
                       title: const Text('Scan Store Receipt', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -232,7 +244,7 @@ class _DashboardViewState extends State<DashboardView> {
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), shape: BoxShape.circle),
                         child: const Icon(Icons.handyman, color: Colors.amber),
                       ),
                       title: const Text('Scan Mechanic Bill', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -246,7 +258,7 @@ class _DashboardViewState extends State<DashboardView> {
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
+                        decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), shape: BoxShape.circle),
                         child: const Icon(Icons.receipt, color: Colors.orange),
                       ),
                       title: const Text('Add Expense', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -280,7 +292,7 @@ class _DashboardViewState extends State<DashboardView> {
           end: Alignment.bottomRight,
           colors: [
             const Color(0xFF135BEC),
-            const Color(0xFF135BEC).withValues(alpha: 0.8),
+            const Color(0xFF135BEC).withOpacity(0.8),
           ],
         ),
       ),
@@ -300,7 +312,7 @@ class _DashboardViewState extends State<DashboardView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(DateFormat('MMM yyyy').format(DateTime.now()), style: const TextStyle(color: Colors.white, fontSize: 12)),
@@ -309,14 +321,14 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           const SizedBox(height: 16),
           Text(
-            NumberFormat.simpleCurrency().format(state.avgCostPerKm),
+            NumberFormat.currency(symbol: getIt<SettingsService>().currency).format(state.avgCostPerKm),
             style: GoogleFonts.inter(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Row(
@@ -348,7 +360,7 @@ class _DashboardViewState extends State<DashboardView> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
+              color: iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -389,7 +401,7 @@ class _DashboardViewState extends State<DashboardView> {
               ],
             ),
           ),
-          Container(width: 1, height: 40, color: Colors.grey.withValues(alpha: 0.2)),
+          Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -440,7 +452,7 @@ class _DashboardViewState extends State<DashboardView> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: (log.type == LogType.fuel ? Colors.blue : Colors.orange).withValues(alpha: 0.1),
+                  color: (log.type == LogType.fuel ? Colors.blue : Colors.orange).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -461,8 +473,8 @@ class _DashboardViewState extends State<DashboardView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(NumberFormat.simpleCurrency().format(log.amount), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  Text(DateFormat('MMM dd').format(log.date), style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(NumberFormat.currency(symbol: getIt<SettingsService>().currency).format(log.amount), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  Text(DateFormat(getIt<SettingsService>().dateFormat).format(log.date), style: const TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ],

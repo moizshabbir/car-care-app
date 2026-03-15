@@ -1,3 +1,5 @@
+import 'package:carlog/core/services/settings_service.dart';
+import 'package:carlog/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -63,7 +65,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -130,7 +132,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
                   IconButton(
                     onPressed: widget.onClose,
                     icon: const Icon(Icons.close),
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ],
               ),
@@ -162,7 +164,8 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
                     child: _buildField(
                       controller: _costController,
                       label: 'Total Cost',
-                      icon: Icons.attach_money,
+                      icon: Icons.monetization_on,
+                      prefix: getIt<SettingsService>().currency,
                     ),
                   ),
                 ],
@@ -197,7 +200,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 4,
-                        shadowColor: const Color(0xFF135BEC).withValues(alpha: 0.4),
+                        shadowColor: const Color(0xFF135BEC).withOpacity(0.4),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -230,6 +233,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
     required String label,
     required IconData icon,
     String? suffix,
+    String? prefix,
     bool isInteger = false,
   }) {
     final theme = Theme.of(context);
@@ -244,7 +248,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            color: theme.colorScheme.onSurface.withOpacity(0.5),
           ),
         ),
         const SizedBox(height: 6),
@@ -253,18 +257,20 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
           keyboardType: TextInputType.numberWithOptions(decimal: !isInteger),
           style: GoogleFonts.robotoMono(fontSize: 16),
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+            prefixIcon: Icon(icon, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+            prefixText: prefix != null ? '$prefix ' : null,
+            prefixStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
             suffixText: suffix,
-            suffixStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+            suffixStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
             filled: true,
             fillColor: isDark ? const Color(0xFF0B0E14) : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
+              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
+              borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),

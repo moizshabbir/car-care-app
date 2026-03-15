@@ -29,7 +29,7 @@ class ViralShareCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withValues(alpha: 0.3),
+            color: Colors.blue.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -46,7 +46,7 @@ class ViralShareCard extends StatelessWidget {
               height: 128,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withOpacity(0.1),
               ),
             ),
           ),
@@ -58,7 +58,7 @@ class ViralShareCard extends StatelessWidget {
               height: 160,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withOpacity(0.2),
               ),
             ),
           ),
@@ -80,7 +80,7 @@ class ViralShareCard extends StatelessWidget {
                         Text(
                           'MY RUNNING COST',
                           style: GoogleFonts.inter(
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withOpacity(0.8),
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 1.0,
@@ -90,9 +90,9 @@ class ViralShareCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                            border: Border.all(color: Colors.white.withOpacity(0.1)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -116,9 +116,9 @@ class ViralShareCard extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        border: Border.all(color: Colors.white.withOpacity(0.1)),
                       ),
                       child: const Center(
                         child: Icon(Icons.bolt, color: Colors.white, size: 18),
@@ -138,7 +138,7 @@ class ViralShareCard extends StatelessWidget {
                           TextSpan(
                             text: '\$', // Currency symbol
                             style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: Colors.white.withOpacity(0.8),
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                             ),
@@ -160,14 +160,14 @@ class ViralShareCard extends StatelessWidget {
                       width: 64,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: Colors.white.withOpacity(0.4),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     Text(
                       'PER KILOMETER',
                       style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.white.withOpacity(0.9),
                         fontSize: 16, // xl
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2.0,
@@ -186,9 +186,9 @@ class ViralShareCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.2),
+                            color: Colors.black.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                            border: Border.all(color: Colors.white.withOpacity(0.05)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +196,7 @@ class ViralShareCard extends StatelessWidget {
                               Text(
                                 'Total Spent',
                                 style: GoogleFonts.inter(
-                                  color: Colors.white.withValues(alpha: 0.6),
+                                  color: Colors.white.withOpacity(0.6),
                                   fontSize: 10, // xs
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -221,9 +221,9 @@ class ViralShareCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.2),
+                            color: Colors.black.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                            border: Border.all(color: Colors.white.withOpacity(0.05)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,7 +231,7 @@ class ViralShareCard extends StatelessWidget {
                               Text(
                                 'Distance',
                                 style: GoogleFonts.inter(
-                                  color: Colors.white.withValues(alpha: 0.6),
+                                  color: Colors.white.withOpacity(0.6),
                                   fontSize: 10, // xs
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -258,7 +258,7 @@ class ViralShareCard extends StatelessWidget {
                 Text(
                   'GENERATED BY CARCAREAPP',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white.withOpacity(0.3),
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 1.5,
