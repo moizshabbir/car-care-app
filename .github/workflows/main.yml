@@ -49,7 +49,7 @@ jobs:
         run: |
           # Increment version in pubspec.yaml or use build-number flag
           # Here we'll use build-number flag which is cleaner for CI
-          flutter build apk --release --dart-define-from-file=.env --build-name=1.0.${{ github.run_number }} --build-number=${{ github.run_number }}
+          flutter build apk --release --dart-define-from-file=.env --build-name=1.0.${{ github.run_number }} --build-number=${{ github.run_number }} --no-tree-shake-icons
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
