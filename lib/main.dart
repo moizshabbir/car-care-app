@@ -105,12 +105,17 @@ class MyApp extends StatelessWidget {
           create: (context) => getIt<VehicleBloc>()..add(LoadVehicles()),
         ),
       ],
-      child: MaterialApp(
-        title: 'CarCareApp',
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
-        home: const AuthGate(),
+      child: ListenableBuilder(
+        listenable: getIt<SettingsService>(),
+        builder: (context, child) {
+          return MaterialApp(
+            title: 'CarCareApp',
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: ThemeMode.system,
+            home: const AuthGate(),
+          );
+        },
       ),
     );
   }

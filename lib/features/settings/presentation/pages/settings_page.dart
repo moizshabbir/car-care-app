@@ -2,6 +2,9 @@ import 'package:carlog/core/services/settings_service.dart';
 import 'package:carlog/injection.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'help_support_page.dart';
 import 'notifications_page.dart';
 import 'privacy_security_page.dart';
@@ -78,6 +81,37 @@ class SettingsPage extends StatelessWidget {
             value: getIt<SettingsService>().dateFormat,
             options: ['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'dd MMM yyyy'],
             onChanged: (val) => getIt<SettingsService>().setDateFormat(val),
+          ),
+          const Divider(color: Colors.grey, height: 32),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.redAccent),
+            title: const Text('Logout', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            onTap: () => _showLogoutDialog(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.cardDark,
+        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to log out?', style: TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              context.read<AuthBloc>().add(SignOut());
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text('Logout', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

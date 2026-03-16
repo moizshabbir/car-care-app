@@ -56,8 +56,10 @@ class AuthRepositoryImpl implements AuthRepository {
       debugPrint("Google Auth obtained. ID Token: ${gAuth.idToken != null ? 'Present' : 'NULL'}, Access Token: ${gAuth.accessToken != null ? 'Present' : 'NULL'}");
       
       if (gAuth.idToken == null && gAuth.accessToken == null) {
-        debugPrint("SEVERE: Both ID Token and Access Token are NULL. Check Google Cloud Console / Firebase configuration.");
+        debugPrint("SEVERE: Both ID Token and Access Token are NULL. This usually means the Google Cloud Console configuration is incorrect or the SHA-1 fingerprint doesn't match.");
       }
+      debugPrint("ID Token length: ${gAuth.idToken?.length ?? 0}");
+      debugPrint("Access Token length: ${gAuth.accessToken?.length ?? 0}");
 
       final credential = GoogleAuthProvider.credential(
         accessToken: gAuth.accessToken,

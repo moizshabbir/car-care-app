@@ -3,11 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:injectable/injectable.dart';
+
 import '../../data/models/maintenance_log_model.dart';
 import '../../domain/repositories/log_repository.dart';
 import 'expense_log_event.dart';
 import 'expense_log_state.dart';
 
+@injectable
 class ExpenseLogBloc extends Bloc<ExpenseLogEvent, ExpenseLogState> {
   final LogRepository _logRepository;
   final FirebaseAuth _firebaseAuth;

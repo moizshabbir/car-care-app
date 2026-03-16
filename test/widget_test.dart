@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:carlog/features/logs/presentation/bloc/dashboard_bloc.dart';
 import 'package:carlog/main.dart';
@@ -8,9 +9,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:carlog/core/services/settings_service.dart';
 import 'package:carlog/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:carlog/features/auth/presentation/bloc/auth_event.dart';
 import 'package:carlog/features/auth/presentation/bloc/auth_state.dart';
+
+class MockSettingsService extends Mock implements SettingsService {
+  @override
+  void addListener(VoidCallback? listener) {}
+  @override
+  void removeListener(VoidCallback? listener) {}
+  @override
+  bool get hasListeners => false;
+}
 
 class MockDashboardBloc extends MockBloc<DashboardEvent, DashboardState> implements DashboardBloc {}
 class MockVehicleBloc extends MockBloc<VehicleEvent, VehicleState> implements VehicleBloc {}
@@ -39,6 +50,10 @@ void main() {
     final mockBloc = MockDashboardBloc();
     final mockVehicleBloc = MockVehicleBloc();
     final mockAuthBloc = MockAuthBloc();
+    final mockSettingsService = MockSettingsService();
+
+    when(() => mockSettingsService.currency).thenReturn(r'$');
+    when(() => mockSettingsService.dateFormat).thenReturn('dd/MM/yyyy');
 
     when(() => mockBloc.state).thenReturn(const DashboardState(status: DashboardStatus.loaded));
     when(() => mockBloc.stream).thenAnswer((_) => Stream.value(const DashboardState(status: DashboardStatus.loaded)));
@@ -91,6 +106,11 @@ void main() {
       getIt.unregister<AuthBloc>();
     }
     getIt.registerFactory<AuthBloc>(() => mockAuthBloc);
+
+    if (getIt.isRegistered<SettingsService>()) {
+      getIt.unregister<SettingsService>();
+    }
+    getIt.registerSingleton<SettingsService>(mockSettingsService);
   });
 
   testWidgets('App initialization test', (WidgetTester tester) async {
@@ -98,6 +118,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('My Garage'), findsOneWidget);
-    expect(find.text('Toyota Camry'), findsOneWidget);
+    expect(find.textContaining('Toyota Camry'), findsWidgets);
   });
 }

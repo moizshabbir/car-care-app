@@ -43,6 +43,23 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    final vehicleState = context.read<VehicleBloc>().state;
+    final initialPage = vehicleState.selectedVehicle != null 
+        ? vehicleState.vehicles.indexOf(vehicleState.selectedVehicle!)
+        : 0;
+    _pageController = PageController(viewportFraction: 0.85, initialPage: initialPage >= 0 ? initialPage : 0);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return BlocListener<VehicleBloc, VehicleState>(
@@ -50,6 +67,12 @@ class _DashboardViewState extends State<DashboardView> {
       listener: (context, state) {
         if (state.selectedVehicle != null) {
           context.read<DashboardBloc>().add(SubscribeToLogs(vehicleId: state.selectedVehicle!.id));
+          
+          // Sync PageView if selection was changed from elsewhere
+          final index = state.vehicles.indexOf(state.selectedVehicle!);
+          if (_pageController.hasClients && _pageController.page?.round() != index) {
+            _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+          }
         }
       },
       child: Scaffold(
@@ -74,45 +97,7 @@ class _DashboardViewState extends State<DashboardView> {
             },
           ),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('My Garage', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            BlocBuilder<VehicleBloc, VehicleState>(
-              builder: (context, vehicleState) {
-                if (vehicleState.status == VehicleStatus.loading) {
-                  return const Text('Loading...', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white));
-                }
-
-                if (vehicleState.vehicles.isEmpty) {
-                  return const Text('No Vehicles', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white));
-                }
-
-                return DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: vehicleState.selectedVehicle?.id,
-                    icon: const Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white),
-                    dropdownColor: AppTheme.cardDark,
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                    isDense: true,
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        final selected = vehicleState.vehicles.firstWhere((v) => v.id == newValue);
-                        context.read<VehicleBloc>().add(SelectVehicle(selected));
-                      }
-                    },
-                    items: vehicleState.vehicles.map<DropdownMenuItem<String>>((vehicle) {
-                      return DropdownMenuItem<String>(
-                        value: vehicle.id,
-                        child: Text(vehicle.name),
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+        title: const Text('My Garage', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           IconButton(
             icon: const Icon(Icons.share, color: Colors.white),
@@ -132,70 +117,79 @@ class _DashboardViewState extends State<DashboardView> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state.recentLogs.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Text(
-                  "Your dashboard is looking a bit lonely! Tap the scan icon below to log your first fuel fill-up or maintenance task.",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16,
-                    height: 1.5,
-                  ),
-                ),
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildVehicleSwitcher(),
               ),
-            );
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildOverviewCard(state),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                        child: _buildStatCard(
-                      title: 'Total Fuel',
-                      value: NumberFormat.currency(symbol: getIt<SettingsService>().currency, decimalDigits: 0).format(state.totalFuelCost),
-                      trend: '+5%', // Dummy trend
-                      icon: Icons.local_gas_station,
-                      iconColor: Colors.orange,
-                    )),
-                    const SizedBox(width: 16),
-                    Expanded(
-                        child: _buildStatCard(
-                      title: 'Last Service',
-                      value: NumberFormat.currency(symbol: getIt<SettingsService>().currency, decimalDigits: 0).format(state.lastServiceCost),
-                      subtext: state.lastServiceDate != null ? DateFormat(getIt<SettingsService>().dateFormat).format(state.lastServiceDate!) : 'N/A',
-                      icon: Icons.build,
-                      iconColor: Colors.purple,
-                    )),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildInfoRow(state),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Recent Logs', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsPage()));
-                      },
-                      child: const Text('View All'),
-                    ),
-                  ],
-                ),
-                _buildRecentLogs(state),
-                const SizedBox(height: 80), // Space for FAB
-              ],
-            ),
+              Expanded(
+                child: state.recentLogs.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Text(
+                            "Your dashboard is looking a bit lonely! Tap the scan icon below to log your first fuel fill-up or maintenance task.",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 16,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            _buildOverviewCard(state),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: _buildStatCard(
+                                  title: 'Total Fuel',
+                                  value: NumberFormat.currency(symbol: getIt<SettingsService>().currency, decimalDigits: 0).format(state.totalFuelCost),
+                                  trend: '+5%', // Dummy trend
+                                  icon: Icons.local_gas_station,
+                                  iconColor: Colors.orange,
+                                )),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                    child: _buildStatCard(
+                                  title: 'Last Service',
+                                  value: NumberFormat.currency(symbol: getIt<SettingsService>().currency, decimalDigits: 0).format(state.lastServiceCost),
+                                  subtext: state.lastServiceDate != null ? DateFormat(getIt<SettingsService>().dateFormat).format(state.lastServiceDate!) : 'N/A',
+                                  icon: Icons.build,
+                                  iconColor: Colors.purple,
+                                )),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildInfoRow(state),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Recent Logs', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsPage()));
+                                  },
+                                  child: const Text('View All'),
+                                ),
+                              ],
+                            ),
+                            _buildRecentLogs(state),
+                            const SizedBox(height: 80), // Space for FAB
+                          ],
+                        ),
+                      ),
+              ),
+            ],
           );
         },
       ),
@@ -478,6 +472,100 @@ class _DashboardViewState extends State<DashboardView> {
                 ],
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVehicleSwitcher() {
+    return BlocBuilder<VehicleBloc, VehicleState>(
+      builder: (context, state) {
+        if (state.vehicles.isEmpty) return const SizedBox.shrink();
+
+        return SizedBox(
+          height: 100,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: state.vehicles.length,
+            onPageChanged: (index) {
+              context.read<VehicleBloc>().add(SelectVehicle(state.vehicles[index]));
+            },
+            itemBuilder: (context, index) {
+              final vehicle = state.vehicles[index];
+              final isSelected = state.selectedVehicle?.id == vehicle.id;
+              
+              return AnimatedScale(
+                scale: isSelected ? 1.0 : 0.9,
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppTheme.primary.withOpacity(0.1) : AppTheme.cardDark,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? AppTheme.primary : Colors.grey[800]!,
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 16),
+                      Hero(
+                        tag: 'vehicle_${vehicle.id}',
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[900],
+                            shape: BoxShape.circle,
+                            image: vehicle.imagePath != null
+                                ? DecorationImage(
+                                    image: FileImage(File(vehicle.imagePath!)),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: vehicle.imagePath == null
+                              ? const Icon(Icons.directions_car, color: Colors.white, size: 30)
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              vehicle.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${vehicle.make} ${vehicle.model}',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: Colors.grey),
+                      const SizedBox(width: 16),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         );
       },

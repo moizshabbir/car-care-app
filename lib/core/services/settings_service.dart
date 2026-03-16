@@ -5,8 +5,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:injectable/injectable.dart';
 
+import 'package:flutter/material.dart';
+
 @lazySingleton
-class SettingsService {
+class SettingsService extends ChangeNotifier {
   static const String _boxName = 'settings';
   static const String _currencyKey = 'currency';
   static const String _dateFormatKey = 'date_format';
@@ -30,6 +32,7 @@ class SettingsService {
   Future<void> setCurrency(String value) async {
     await settingsBox.put(_currencyKey, value);
     _currencyController.add(value);
+    notifyListeners();
   }
 
   String get dateFormat {
@@ -39,6 +42,7 @@ class SettingsService {
   Future<void> setDateFormat(String value) async {
     await settingsBox.put(_dateFormatKey, value);
     _dateFormatController.add(value);
+    notifyListeners();
   }
 
   Future<void> detectAndSetCurrency() async {
@@ -86,5 +90,6 @@ class SettingsService {
   void dispose() {
     _currencyController.close();
     _dateFormatController.close();
+    super.dispose();
   }
 }
