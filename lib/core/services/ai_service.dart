@@ -46,6 +46,13 @@ class AIService {
       case 'fuel':
         return '''
         Analyze the following text from a fuel/gas station receipt and extract the data into a JSON object.
+        CRITICAL RULES:
+        1. Do NOT confuse receipt numbers, transaction IDs, phone numbers, or zip codes with amounts or liters.
+        2. "totalAmount" must be the final price paid. Look for keywords like "TOTAL", "AMOUNT", "NET AMO", "PAYMENT" next to currency symbols (Rs, PKR, \$, ¥).
+        3. "liters" must be the volume of fuel pumped. Look for keywords like "LTR", "VOLUME", "QTY", "LITERS".
+        4. "pricePerLiter" is the unit rate. Look for keywords like "RATE", "PRICE/L".
+        5. Provide numbers as floats without currency symbols.
+        
         JSON format:
         {
           "stationName": "string or null",
@@ -59,7 +66,13 @@ class AIService {
         ''';
       case 'store':
         return '''
-        Analyze the following text from a store/POS receipt and extract the data into a JSON object.
+        Analyze the following text from a store/POS auto parts receipt and extract the data into a JSON object.
+        CRITICAL RULES:
+        1. Do NOT confuse receipt numbers (e.g. "No. 6438"), phone numbers, or dates with prices.
+        2. "totalAmount" is the final total at the bottom.
+        3. For "items", only include actual products or services sold, ignoring headers like "DESCRIPTION", "QTY", "AMOUNT", or footer messages.
+        4. Provide numbers as floats without currency symbols.
+        
         JSON format:
         {
           "storeName": "string or null",
@@ -78,6 +91,12 @@ class AIService {
       case 'mechanic':
         return '''
         Analyze the following text from a mechanic or vehicle repair bill and extract the data into a JSON object.
+        CRITICAL RULES:
+        1. Do NOT confuse invoice numbers, phone numbers, or dates with prices.
+        2. "totalAmount" is the sum or final price at the bottom.
+        3. For "services", only include the labor or parts listed with a cost, ignoring headers or footer text.
+        4. Provide numbers as floats without currency symbols.
+        
         JSON format:
         {
           "mechanicName": "string or null",

@@ -296,16 +296,16 @@ class ReceiptParserService {
 
     // Pattern: "item name ... price" or "item name qty x price"
     final itemPattern = RegExp(
-      r'^(.+?)\s+(\d+)\s*[xX×]\s*(?:rs\.?|₹)?\s*([\d,]+\.?\d*)\s*$',
+      r'^(.+?)\s+(\d+)\s*[xX×]\s*(?:rs\.?|₹|\$)?\s*([\d,]+\.\d{2})\s*$',
     );
     final simpleItemPattern = RegExp(
-      r'^(.+?)\s+(?:rs\.?|₹)?\s*([\d,]+\.?\d+)\s*$',
+      r'^(.+?)\s+(?:rs\.?|₹|\$)?\s*([\d,]+\.\d{2})\s*$',
     );
 
-    // Skip header and footer lines
+    // Skip header and footer lines, and lines that look like a receipt number
     final skipKeywords = ['total', 'subtotal', 'sub-total', 'tax', 'gst',
       'sgst', 'cgst', 'discount', 'change', 'cash', 'card', 'upi',
-      'thank', 'visit', 'invoice', 'bill', 'date', 'time', 'receipt'];
+      'thank', 'visit', 'invoice', 'bill', 'date', 'time', 'receipt', 'no.', 'number', 'ph', 'tel'];
 
     for (var line in lines) {
       final lineLower = line.toLowerCase();
@@ -313,9 +313,17 @@ class ReceiptParserService {
       // Skip header/footer lines
       bool skip = false;
       for (var keyword in skipKeywords) {
-        if (lineLower.startsWith(keyword) || lineLower.contains('total')) {
-          skip = true;
-          break;
+        if (lineLower.startsWith(keyword) || lineLower.contains(keyword)) {
+          // ensure it's a word boundary for some short keywords to be safe
+          if (keyword == 'ph' || keyword == 'no.') {
+             if (lineLower.contains(RegExp(r'\b' + RegExp.escape(keyword) + r'\b'))) {
+                 skip = true;
+                 break;
+             }
+          } else {
+             skip = true;
+             break;
+          }
         }
       }
       if (skip) continue;

@@ -35,35 +35,24 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
   List<POSItem> _items = [];
   List<bool> _selectedItems = [];
 
+  List<TextEditingController> _nameControllers = [];
+  List<TextEditingController> _qtyControllers = [];
+  List<TextEditingController> _priceControllers = [];
+
+  @override
+  void dispose() {
+    for (var c in _nameControllers) { c.dispose(); }
+    for (var c in _qtyControllers) { c.dispose(); }
+    for (var c in _priceControllers) { c.dispose(); }
+    super.dispose();
+  }
+
   Future<void> _scanImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     if (pickedFile == null) return;
 
-    setState(() => _isProcessing = true);
-
-    try {
-      final inputImage = InputImage.fromFilePath(pickedFile.path);
-      final recognizedText = await _ocrService.processImage(inputImage);
-      final text = recognizedText.text;
-
-      final items = await _parserService.parsePOSReceipt(text);
-      final storeName = _parserService.extractBusinessName(text);
-
-      setState(() {
-        _items = items;
-        _selectedItems = List.filled(items.length, true);
-        _storeName = storeName;
-        _isProcessing = false;
-      });
-    } catch (e) {
-      setState(() => _isProcessing = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error scanning receipt: $e')),
-        );
-      }
-    }
+    await _processImage(pickedFile.path);
   }
 
   Future<void> _pickFromGallery() async {
@@ -71,20 +60,31 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
 
+    await _processImage(pickedFile.path);
+  }
+
+  Future<void> _processImage(String path) async {
     setState(() => _isProcessing = true);
 
     try {
-      final inputImage = InputImage.fromFilePath(pickedFile.path);
+      final inputImage = InputImage.fromFilePath(path);
       final recognizedText = await _ocrService.processImage(inputImage);
       final text = recognizedText.text;
 
       final items = await _parserService.parsePOSReceipt(text);
       final storeName = _parserService.extractBusinessName(text);
 
+      for (var c in _nameControllers) { c.dispose(); }
+      for (var c in _qtyControllers) { c.dispose(); }
+      for (var c in _priceControllers) { c.dispose(); }
+
       setState(() {
         _items = items;
         _selectedItems = List.filled(items.length, true);
         _storeName = storeName;
+        _nameControllers = items.map((i) => TextEditingController(text: i.name)).toList();
+        _qtyControllers = items.map((i) => TextEditingController(text: i.quantity.toString())).toList();
+        _priceControllers = items.map((i) => TextEditingController(text: i.price.toStringAsFixed(2))).toList();
         _isProcessing = false;
       });
     } catch (e) {
@@ -105,12 +105,16 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       for (int i = 0; i < _items.length; i++) {
         if (_selectedItems[i]) {
           final item = _items[i];
+          final name = _nameControllers[i].text.trim().isNotEmpty ? _nameControllers[i].text.trim() : item.name;
+          final qty = int.tryParse(_qtyControllers[i].text) ?? item.quantity;
+          final price = double.tryParse(_priceControllers[i].text) ?? item.price;
+          
           final log = MaintenanceLogModel(
             id: const Uuid().v4(),
             date: DateTime.now(),
             category: 'Parts',
-            cost: item.price * item.quantity,
-            note: '${item.name} (Qty: ${item.quantity})${_storeName != null ? ' from $_storeName' : ''}',
+            cost: price * qty,
+            note: '$name (Qty: $qty)${_storeName != null ? ' from $_storeName' : ''}',
             userId: FirebaseAuth.instance.currentUser?.uid ?? '',
             vehicleId: vehicleId,
           );
@@ -280,25 +284,79 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         ),
         const SizedBox(height: 8),
         ...List.generate(_items.length, (index) {
-          final item = _items[index];
           return Card(
             color: AppTheme.cardDark,
             margin: const EdgeInsets.only(bottom: 8),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: CheckboxListTile(
-              value: _selectedItems[index],
-              onChanged: (val) {
-                setState(() => _selectedItems[index] = val ?? false);
-              },
-              activeColor: AppTheme.primary,
-              title: Text(item.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-              subtitle: Text(
-                'Qty: ${item.quantity}',
-                style: TextStyle(color: Colors.grey[400], fontSize: 12),
-              ),
-              secondary: Text(
-                '${getIt<SettingsService>().currency}${(item.price * item.quantity).toStringAsFixed(2)}',
-                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _selectedItems[index],
+                    onChanged: (val) {
+                      setState(() => _selectedItems[index] = val ?? false);
+                    },
+                    activeColor: AppTheme.primary,
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _nameControllers[index],
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[700]!)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[700]!)),
+                            labelText: 'Item Name',
+                            labelStyle: TextStyle(color: Colors.grey[500], fontSize: 12),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: TextField(
+                                controller: _qtyControllers[index],
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(color: Colors.white, fontSize: 14),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[700]!)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[700]!)),
+                                  labelText: 'Qty',
+                                  labelStyle: TextStyle(color: Colors.grey[500], fontSize: 12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              flex: 2,
+                              child: TextField(
+                                controller: _priceControllers[index],
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                style: const TextStyle(color: Colors.white, fontSize: 14),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  prefixText: getIt<SettingsService>().currency,
+                                  prefixStyle: TextStyle(color: Colors.grey[400]),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[700]!)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[700]!)),
+                                  labelText: 'Unit Price',
+                                  labelStyle: TextStyle(color: Colors.grey[500], fontSize: 12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );

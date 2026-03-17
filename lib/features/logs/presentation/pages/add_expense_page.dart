@@ -295,9 +295,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
                         const SizedBox(height: 12),
                         BlocBuilder<CategoryBloc, CategoryState>(
                           builder: (context, state) {
-                            if (state.status == CategoryStatus.loading) {
+                            if (state.status == CategoryStatus.loading && state.categories.isEmpty) {
                               return const Center(child: CircularProgressIndicator());
                             }
+                            
+                            bool selectedCatExists = state.categories.any((cat) => cat.name == _selectedCategory);
+
                             return SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
@@ -306,6 +309,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                     padding: const EdgeInsets.only(right: 12),
                                     child: _buildCategoryChip(cat.name, IconData(cat.iconCodePoint, fontFamily: 'MaterialIcons')),
                                   )),
+                                  if (!selectedCatExists && _selectedCategory.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 12),
+                                      child: _buildCategoryChip(_selectedCategory, Icons.label),
+                                    ),
                                   _buildAddCategoryChip(context),
                                 ],
                               ),
