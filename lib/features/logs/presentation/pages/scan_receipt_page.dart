@@ -3,11 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../../core/services/ocr_service.dart';
 import '../../../../core/services/receipt_parser_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../injection.dart';
@@ -25,7 +23,6 @@ class ScanReceiptPage extends StatefulWidget {
 }
 
 class _ScanReceiptPageState extends State<ScanReceiptPage> {
-  final _ocrService = getIt<OCRService>();
   final _parserService = getIt<ReceiptParserService>();
   final _logRepository = getIt<LogRepository>();
 
@@ -60,19 +57,34 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
 
-    await _processImage(pickedFile.path);
+    try {
+      await _processImage(pickedFile.path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error scanning receipt: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _processImage(String path) async {
     setState(() => _isProcessing = true);
 
     try {
-      final inputImage = InputImage.fromFilePath(path);
-      final recognizedText = await _ocrService.processImage(inputImage);
-      final text = recognizedText.text;
+      final parsedReceipt = await _parserService.parsePOSReceipt(path);
+      final items = parsedReceipt.items;
+      final storeName = parsedReceipt.storeName;
 
-      final items = await _parserService.parsePOSReceipt(text);
-      final storeName = _parserService.extractBusinessName(text);
+      if (items.isEmpty) {
+        setState(() => _isProcessing = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not read any items from the receipt. Please try another clearer image.')),
+          );
+        }
+        return;
+      }
 
       for (var c in _nameControllers) { c.dispose(); }
       for (var c in _qtyControllers) { c.dispose(); }

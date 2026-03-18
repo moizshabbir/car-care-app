@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter/foundation.dart';
@@ -6,7 +7,7 @@ import 'package:flutter/foundation.dart';
 @lazySingleton
 class AIService {
   static const _apiKey = String.fromEnvironment('GEMINI_API_KEY');
-  static const _modelName = 'gemini-1.5-flash';
+  static const _modelName = 'gemini-2.5-flash-preview-09-2025';
 
   late final GenerativeModel _model;
 
@@ -20,6 +21,43 @@ class AIService {
     );
   }
 
+  /// NEW NATIVE IMAGE FLOW (Modeled exactly after user's index.js)
+  Future<Map<String, dynamic>?> analyzeReceiptImage(Uint8List imageBytes) async {
+    if (_apiKey.isEmpty) {
+      debugPrint('WARNING: GEMINI_API_KEY is not set. AI parsing will not work.');
+      return null;
+    }
+
+    const systemPrompt = '''
+You are an expert OCR agent. Extract data from the receipt image into one of these 3 JSON formats:
+
+1. If Refuel (Gas/Petrol/Diesel): { "type": "refuel", "name": "Station Name", "date": "YYYY-MM-DD", "liter": 0.00, "total_amount": 0.00, "currency": "..." }
+2. If Store (Groceries/Items): { "type": "store", "name": "Store Name", "date": "YYYY-MM-DD", "items": [{"name": "item", "qty": 1, "price": 0, "total": 0}], "total_amount": 0, "currency": "..." }
+3. If Mechanic (Repairs/Parts/Labor): { "type": "mechanic", "name": "Shop Name", "date": "YYYY-MM-DD", "items": [{"name": "maintenance item", "price": 0}], "total_amount": 0, "currency": "..." }
+
+CRITICAL: 
+- If you see "Labor", "Service", "Repair", "Oil Filter", or "Brake Pad", classify as "mechanic".
+- If you see "Super", "HSD", "Diesel", "Petrol" or specific liter counts, classify as "refuel".
+- Return ONLY valid JSON.
+''';
+
+    try {
+      final prompt = TextPart("Extract receipt data accurately.\n\n$systemPrompt");
+      final imagePart = DataPart('image/jpeg', imageBytes);
+      
+      final content = [Content.multi([prompt, imagePart])];
+      final response = await _model.generateContent(content);
+      
+      if (response.text != null) {
+        return jsonDecode(response.text!) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint('Error during AI receipt image analysis: $e');
+    }
+    return null;
+  }
+
+  /// LEGACY TEXT FLOW (Retained for arbitrary text fallback if needed)
   Future<Map<String, dynamic>?> analyzeReceiptText(String text, String receiptType) async {
     if (_apiKey.isEmpty) {
       debugPrint('WARNING: GEMINI_API_KEY is not set. AI parsing will not work.');
@@ -62,7 +100,7 @@ class AIService {
           "location": "string or null"
         }
         Text:
-        $text
+        \$text
         ''';
       case 'store':
         return '''
@@ -86,7 +124,7 @@ class AIService {
           "totalAmount": number or null
         }
         Text:
-        $text
+        \$text
         ''';
       case 'mechanic':
         return '''
@@ -109,10 +147,10 @@ class AIService {
           "totalAmount": number or null
         }
         Text:
-        $text
+        \$text
         ''';
       default:
-        return 'Analyze this text and extract any meaningful receipt data into JSON: $text';
+        return 'Analyze this text and extract any meaningful receipt data into JSON: \$text';
     }
   }
 }

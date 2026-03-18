@@ -151,58 +151,41 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
     emit(state.copyWith(status: QuickLogStatus.processing));
 
     try {
-      final inputImage = InputImage.fromFilePath(state.imageFile!.path);
-      final recognizedText = await _ocrService.processImage(inputImage);
-      final text = recognizedText.text;
+      final parsed = await _receiptParserService.parseAnyReceipt(state.imageFile!.path);
 
-      // Detect receipt type
-      final receiptType = _receiptParserService.detectReceiptType(text);
-
-      if (receiptType == ReceiptType.fuel) {
-        // Parse fuel receipt
-        final parsed = await _receiptParserService.parseFuelReceipt(text);
+      if (parsed is ParsedFuelReceipt) {
         emit(state.copyWith(
           status: QuickLogStatus.review,
-          receiptType: receiptType,
+          receiptType: ReceiptType.fuel,
           stationName: parsed.stationName,
           cost: parsed.totalAmount,
           liters: parsed.liters,
         ));
-      } else if (receiptType == ReceiptType.pos) {
-        // Parse POS receipt
-        final items = await _receiptParserService.parsePOSReceipt(text);
-        final storeName = _receiptParserService.extractBusinessName(text);
+      } else if (parsed is ParsedPOSReceipt) {
         emit(state.copyWith(
           status: QuickLogStatus.review,
-          receiptType: receiptType,
-          stationName: storeName,
-          parsedPOSItems: items,
+          receiptType: ReceiptType.pos,
+          stationName: parsed.storeName,
+          parsedPOSItems: parsed.items,
         ));
-      } else if (receiptType == ReceiptType.mechanic) {
-        // Parse mechanic bill
-        final services = await _receiptParserService.parseMechanicBill(text);
-        final mechanicName = _receiptParserService.extractBusinessName(text);
+      } else if (parsed is ParsedMechanicBill) {
         emit(state.copyWith(
           status: QuickLogStatus.review,
-          receiptType: receiptType,
-          stationName: mechanicName,
-          parsedServiceItems: services,
+          receiptType: ReceiptType.mechanic,
+          stationName: parsed.mechanicName,
+          parsedServiceItems: parsed.services,
         ));
       } else {
-        // Unknown receipt — try fuel parsing as fallback (original behavior)
-        final parsed = await _receiptParserService.parseFuelReceipt(text);
+        // Fallback or Unknown
         emit(state.copyWith(
-          status: QuickLogStatus.review,
-          receiptType: ReceiptType.unknown,
-          stationName: parsed.stationName,
-          cost: parsed.totalAmount,
-          liters: parsed.liters,
+          status: QuickLogStatus.error,
+          errorMessage: 'Could not categorize the receipt from the image.',
         ));
       }
     } catch (e) {
       emit(state.copyWith(
         status: QuickLogStatus.error,
-        errorMessage: 'OCR Processing failed: $e',
+        errorMessage: 'AI Processing failed: $e',
       ));
     }
   }

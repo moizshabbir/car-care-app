@@ -2,11 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../../core/services/ocr_service.dart';
 import '../../../../core/services/receipt_parser_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/settings_service.dart';
@@ -24,7 +22,6 @@ class ScanMechanicBillPage extends StatefulWidget {
 }
 
 class _ScanMechanicBillPageState extends State<ScanMechanicBillPage> {
-  final _ocrService = getIt<OCRService>();
   final _parserService = getIt<ReceiptParserService>();
   final _logRepository = getIt<LogRepository>();
 
@@ -63,12 +60,19 @@ class _ScanMechanicBillPageState extends State<ScanMechanicBillPage> {
     setState(() => _isProcessing = true);
 
     try {
-      final inputImage = InputImage.fromFilePath(path);
-      final recognizedText = await _ocrService.processImage(inputImage);
-      final text = recognizedText.text;
+      final parsedBill = await _parserService.parseMechanicBill(path);
+      final services = parsedBill.services;
+      final mechanicName = parsedBill.mechanicName;
 
-      final services = await _parserService.parseMechanicBill(text);
-      final mechanicName = _parserService.extractBusinessName(text);
+      if (services.isEmpty) {
+        setState(() => _isProcessing = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not read any service items from the image. Please try another clearer image.')),
+          );
+        }
+        return;
+      }
 
       // Dispose old controllers
       for (var c in _descControllers) { c.dispose(); }

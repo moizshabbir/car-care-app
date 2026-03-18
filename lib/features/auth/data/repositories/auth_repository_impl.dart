@@ -9,6 +9,7 @@ import '../../domain/repositories/auth_repository.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  bool _isGoogleSignInInitialized = false;
 
   AuthRepositoryImpl(this._firebaseAuth, this._googleSignIn);
 
@@ -41,14 +42,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserCredential> signInWithGoogle() async {
     try {
-      final dynamic googleUser = await (_googleSignIn as dynamic).signIn();
-      if (googleUser == null) {
-        debugPrint("Google Sign-In cancelled by user.");
-        throw FirebaseAuthException(
-          code: 'google-sign-in-cancelled',
-          message: 'Google sign-in was cancelled by user',
-        );
+      if (!_isGoogleSignInInitialized) {
+        await _googleSignIn.initialize();
+        _isGoogleSignInInitialized = true;
       }
+      final googleUser = await _googleSignIn.authenticate();
+      
       debugPrint("Google User obtained: ${googleUser.email}");
       
       final dynamic gAuth = googleUser.authentication;

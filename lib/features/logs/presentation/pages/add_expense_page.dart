@@ -61,11 +61,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
     });
 
     try {
-      final inputImage = InputImage.fromFilePath(path);
-      final recognizedText = await _ocrService.processImage(inputImage);
-      final text = recognizedText.text;
-
-      final fuelData = await _parserService.parseFuelReceipt(text);
+      final fuelData = await _parserService.parseFuelReceipt(path);
       setState(() {
         if (fuelData.totalAmount != null) {
           _costController.text = fuelData.totalAmount!.toStringAsFixed(2);

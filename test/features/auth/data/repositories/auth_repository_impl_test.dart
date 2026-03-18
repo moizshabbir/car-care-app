@@ -90,8 +90,9 @@ void main() {
     });
 
     group('signInWithGoogle', () {
-      test('calls signIn and signInWithCredential on success', () async {
-        when((mockGoogleSignIn as dynamic).signIn()).thenAnswer((_) async => mockGoogleUser);
+      test('calls authenticate and signInWithCredential on success', () async {
+        when(mockGoogleSignIn.initialize()).thenAnswer((_) async {});
+        when(mockGoogleSignIn.authenticate()).thenAnswer((_) async => mockGoogleUser);
         when((mockGoogleUser as dynamic).authentication).thenReturn(mockGoogleAuth);
         when((mockGoogleAuth as dynamic).idToken).thenReturn('idToken');
         when((mockGoogleAuth as dynamic).accessToken).thenReturn('accessToken');
@@ -99,12 +100,14 @@ void main() {
         
         await repository.signInWithGoogle();
  
-        verify((mockGoogleSignIn as dynamic).signIn()).called(1);
+        verify(mockGoogleSignIn.initialize()).called(1);
+        verify(mockGoogleSignIn.authenticate()).called(1);
         verify(mockFirebaseAuth.signInWithCredential(any)).called(1);
       });
  
       test('throws FirebaseAuthException when user cancels', () async {
-        when((mockGoogleSignIn as dynamic).signIn()).thenAnswer((_) async => null);
+        when(mockGoogleSignIn.initialize()).thenAnswer((_) async {});
+        when(mockGoogleSignIn.authenticate()).thenThrow(Exception('cancel'));
  
         expect(
           () => repository.signInWithGoogle(),

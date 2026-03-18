@@ -4,6 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
+import 'dart:typed_data' as _i4;
 
 import 'package:carlog/core/services/ai_service.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
@@ -30,6 +31,16 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
   MockAIService() {
     _i1.throwOnMissingStub(this);
   }
+
+  @override
+  _i3.Future<Map<String, dynamic>?> analyzeReceiptImage(
+    _i4.Uint8List? imageBytes,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#analyzeReceiptImage, [imageBytes]),
+            returnValue: _i3.Future<Map<String, dynamic>?>.value(),
+          )
+          as _i3.Future<Map<String, dynamic>?>);
 
   @override
   _i3.Future<Map<String, dynamic>?> analyzeReceiptText(
