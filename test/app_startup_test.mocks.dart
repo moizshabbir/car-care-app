@@ -137,6 +137,12 @@ class _FakeFuture_16<T1> extends _i1.SmartFake implements _i9.Future<T1> {
     : super(parent, parentInvocation);
 }
 
+class _FakePipelineSource_17 extends _i1.SmartFake
+    implements _i8.PipelineSource {
+  _FakePipelineSource_17(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [FirebaseAuth].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -883,12 +889,14 @@ class MockFirebaseAnalytics extends _i1.Mock implements _i12.FirebaseAnalytics {
   _i9.Future<void> logEvent({
     required String? name,
     Map<String, Object>? parameters,
+    List<_i13.AnalyticsEventItem>? items,
     _i13.AnalyticsCallOptions? callOptions,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#logEvent, [], {
               #name: name,
               #parameters: parameters,
+              #items: items,
               #callOptions: callOptions,
             }),
             returnValue: _i9.Future<void>.value(),
@@ -1734,6 +1742,15 @@ class MockFirebaseAnalytics extends _i1.Mock implements _i12.FirebaseAnalytics {
           as _i9.Future<void>);
 
   @override
+  _i9.Future<void> logTransaction(String? transactionId) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTransaction, [transactionId]),
+            returnValue: _i9.Future<void>.value(),
+            returnValueForMissingStub: _i9.Future<void>.value(),
+          )
+          as _i9.Future<void>);
+
+  @override
   _i9.Future<void> setSessionTimeoutDuration(Duration? timeout) =>
       (super.noSuchMethod(
             Invocation.method(#setSessionTimeoutDuration, [timeout]),
@@ -2232,6 +2249,21 @@ class MockFirebaseFirestore extends _i1.Mock implements _i8.FirebaseFirestore {
             returnValueForMissingStub: _i9.Future<void>.value(),
           )
           as _i9.Future<void>);
+
+  @override
+  _i8.PipelineSource pipeline() =>
+      (super.noSuchMethod(
+            Invocation.method(#pipeline, []),
+            returnValue: _FakePipelineSource_17(
+              this,
+              Invocation.method(#pipeline, []),
+            ),
+            returnValueForMissingStub: _FakePipelineSource_17(
+              this,
+              Invocation.method(#pipeline, []),
+            ),
+          )
+          as _i8.PipelineSource);
 
   @override
   _i9.Future<void> setIndexConfigurationFromJSON(String? json) =>

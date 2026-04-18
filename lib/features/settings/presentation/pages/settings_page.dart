@@ -9,6 +9,7 @@ import 'help_support_page.dart';
 import 'notifications_page.dart';
 import 'privacy_security_page.dart';
 import 'profile_page.dart';
+import 'data_management_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -73,7 +74,14 @@ class _SettingsPageState extends State<SettingsPage> {
             trailing: const Icon(Icons.chevron_right, color: Colors.grey),
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HelpSupportPage())),
           ),
+                    ListTile(
+            leading: const Icon(Icons.storage, color: Colors.white),
+            title: const Text('Data Management', style: TextStyle(color: Colors.white)),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DataManagementPage())),
+          ),
           const Divider(color: Colors.grey, height: 32),
+
           const Text('LOCALIZATION', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           _buildLocalizationTile(

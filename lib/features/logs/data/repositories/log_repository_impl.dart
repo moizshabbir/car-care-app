@@ -176,4 +176,21 @@ class LogRepositoryImpl implements LogRepository {
           .toList();
     });
   }
+  @override
+  Future<void> deleteFuelLog(String id) async {
+    if (Hive.isBoxOpen('fuel_logs')) {
+      final box = Hive.box<FuelLogModel>('fuel_logs');
+      await box.delete(id);
+    }
+    await _firestore.collection('fuel_logs').doc(id).delete();
+  }
+
+  @override
+  Future<void> deleteMaintenanceLog(String id) async {
+    if (Hive.isBoxOpen('maintenance_logs')) {
+      final box = Hive.box<MaintenanceLogModel>('maintenance_logs');
+      await box.delete(id);
+    }
+    await _firestore.collection('maintenance_logs').doc(id).delete();
+  }
 }

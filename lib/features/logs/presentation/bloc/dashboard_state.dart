@@ -5,6 +5,7 @@ enum DashboardStatus { loading, loaded, error }
 enum LogType { fuel, service }
 
 class DashboardLogItem extends Equatable {
+  final dynamic originalLog;
   final String id;
   final String title;
   final String subtitle;
@@ -19,10 +20,11 @@ class DashboardLogItem extends Equatable {
     required this.amount,
     required this.date,
     required this.type,
+    this.originalLog,
   });
 
   @override
-  List<Object?> get props => [id, title, subtitle, amount, date, type];
+  List<Object?> get props => [id, title, subtitle, amount, date, type, originalLog];
 }
 
 class DashboardState extends Equatable {
@@ -32,6 +34,7 @@ class DashboardState extends Equatable {
 
   // Stats
   final double avgCostPerKm;
+  final double fuelEfficiency;
   final double totalFuelCost;
   final double totalMaintenanceCost;
   final double lastServiceCost;
@@ -46,6 +49,7 @@ class DashboardState extends Equatable {
     this.fuelLogs = const [],
     this.maintenanceLogs = const [],
     this.avgCostPerKm = 0.0,
+    this.fuelEfficiency = 0.0,
     this.totalFuelCost = 0.0,
     this.totalMaintenanceCost = 0.0,
     this.lastServiceCost = 0.0,
@@ -61,6 +65,7 @@ class DashboardState extends Equatable {
     List<FuelLogModel>? fuelLogs,
     List<MaintenanceLogModel>? maintenanceLogs,
     double? avgCostPerKm,
+    double? fuelEfficiency,
     double? totalFuelCost,
     double? totalMaintenanceCost,
     double? lastServiceCost,
@@ -75,6 +80,7 @@ class DashboardState extends Equatable {
       fuelLogs: fuelLogs ?? this.fuelLogs,
       maintenanceLogs: maintenanceLogs ?? this.maintenanceLogs,
       avgCostPerKm: avgCostPerKm ?? this.avgCostPerKm,
+      fuelEfficiency: fuelEfficiency ?? this.fuelEfficiency,
       totalFuelCost: totalFuelCost ?? this.totalFuelCost,
       totalMaintenanceCost: totalMaintenanceCost ?? this.totalMaintenanceCost,
       lastServiceCost: lastServiceCost ?? this.lastServiceCost,

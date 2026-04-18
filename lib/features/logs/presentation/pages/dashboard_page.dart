@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'transaction_detail_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
@@ -314,10 +315,38 @@ class _DashboardViewState extends State<DashboardView> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            NumberFormat.currency(symbol: getIt<SettingsService>().currency).format(state.avgCostPerKm),
-            style: GoogleFonts.inter(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
+                    Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                NumberFormat.currency(symbol: getIt<SettingsService>().currency).format(state.avgCostPerKm),
+                style: GoogleFonts.inter(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '/km',
+                style: GoogleFonts.inter(fontSize: 16, color: Colors.grey[400]),
+              ),
+            ],
           ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                state.fuelEfficiency.toStringAsFixed(2),
+                style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'km/L',
+                style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
+              ),
+            ],
+          ),
+
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -427,7 +456,7 @@ class _DashboardViewState extends State<DashboardView> {
     return '$diff days ago';
   }
 
-  Widget _buildRecentLogs(DashboardState state) {
+    Widget _buildRecentLogs(DashboardState state) {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -435,7 +464,11 @@ class _DashboardViewState extends State<DashboardView> {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final log = state.recentLogs[index];
-        return Container(
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => TransactionDetailPage(logItem: log)));
+          },
+          child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppTheme.cardDark,
@@ -473,12 +506,13 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ],
           ),
+        ),
         );
       },
     );
   }
 
-  Widget _buildVehicleSwitcher() {
+    Widget _buildVehicleSwitcher() {
     return BlocBuilder<VehicleBloc, VehicleState>(
       builder: (context, state) {
         if (state.vehicles.isEmpty) return const SizedBox.shrink();

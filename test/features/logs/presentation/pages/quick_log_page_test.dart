@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:carlog/features/logs/domain/repositories/log_repository.dart' as carlog_repo;
+import 'package:carlog/features/logs/data/models/fuel_log_model.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockQuickLogBloc extends MockBloc<QuickLogEvent, QuickLogState> implements QuickLogBloc {}
@@ -21,6 +23,7 @@ class FakeQuickLogEvent extends Fake implements QuickLogEvent {}
 
 class MockAnalyticsService extends Mock implements AnalyticsService {}
 class MockSettingsService extends Mock implements SettingsService {}
+class MockLogRepository extends Mock implements carlog_repo.LogRepository {}
 class FakeVehicleEvent extends Fake implements VehicleEvent {}
 
 void main() {
@@ -28,6 +31,7 @@ void main() {
   late MockAnalyticsService mockAnalytics;
   late MockSettingsService mockSettings;
   late MockVehicleBloc mockVehicleBloc;
+  late MockLogRepository mockRepo;
 
   setUpAll(() {
     registerFallbackValue(FakeQuickLogEvent());
@@ -40,6 +44,8 @@ void main() {
     mockAnalytics = MockAnalyticsService();
     mockSettings = MockSettingsService();
     mockVehicleBloc = MockVehicleBloc();
+    mockRepo = MockLogRepository();
+    when(() => mockRepo.getRecentFuelLogs()).thenAnswer((_) async => <FuelLogModel>[]);
 
     when(() => mockAnalytics.logLogStart()).thenAnswer((_) async {});
     when(() => mockAnalytics.startTimer(any())).thenAnswer((_) async {});
@@ -72,7 +78,14 @@ void main() {
     if (getIt.isRegistered<SettingsService>()) {
       getIt.unregister<SettingsService>();
     }
+    if (getIt.isRegistered<carlog_repo.LogRepository>()) {
+      getIt.unregister<carlog_repo.LogRepository>();
+    }
+    if (getIt.isRegistered<SettingsService>()) {
+      getIt.unregister<SettingsService>();
+    }
     getIt.registerSingleton<SettingsService>(mockSettings);
+    getIt.registerSingleton<carlog_repo.LogRepository>(mockRepo);
 
     if (getIt.isRegistered<VehicleBloc>()) {
       getIt.unregister<VehicleBloc>();

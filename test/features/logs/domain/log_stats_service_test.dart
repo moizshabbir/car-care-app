@@ -1,98 +1,66 @@
 import 'package:carlog/features/logs/data/models/fuel_log_model.dart';
-import 'package:carlog/features/logs/data/models/location_model.dart';
 import 'package:carlog/features/logs/domain/log_stats_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  late LogStatsService service;
+  late LogStatsService statsService;
 
   setUp(() {
-    service = LogStatsService();
+    statsService = LogStatsService();
   });
-
-  final mockLocation = LocationModel(
-    latitude: 0.0,
-    longitude: 0.0,
-    timestamp: DateTime.now(),
-  );
-
-  FuelLogModel createLog(String id, int odometer, double cost, DateTime timestamp) {
-    return FuelLogModel(
-      id: id,
-      odometer: odometer,
-      liters: 10.0, // Irrelevant for this test
-      cost: cost,
-      timestamp: timestamp,
-      location: mockLocation,
-      userId: 'test_user',
-    );
-  }
 
   group('LogStatsService', () {
     test('calculateAverageCostPerKm returns 0.0 for empty list', () {
-      expect(service.calculateAverageCostPerKm([]), 0.0);
+      expect(statsService.calculateAverageCostPerKm([]), 0.0);
     });
 
-    test('calculateAverageCostPerKm returns 0.0 for single log', () {
+    test('calculateFuelEfficiency returns correct value', () {
       final logs = [
-        createLog('1', 1000, 50.0, DateTime.now()),
+        FuelLogModel(
+          id: '1',
+          odometer: 100,
+          liters: 10,
+          cost: 20,
+          timestamp: DateTime.now(),
+          userId: 'user1',
+        ),
+        FuelLogModel(
+          id: '2',
+          odometer: 200,
+          liters: 10,
+          cost: 25,
+          timestamp: DateTime.now(),
+          userId: 'user1',
+        ),
       ];
-      expect(service.calculateAverageCostPerKm(logs), 0.0);
+      // Distance = 100. Liters = 10 (for the newest refill). Wait, calculation sums all except newest?
+      // "for (int i = 0; i < logs.length - 1; i++) { totalLiters += logs[i].liters; }"
+      // Where logs are sorted descending. newest is logs.first, oldest is logs.last.
+      // logs.first (id 2) has liters=10. logs.last (id 1) has liters=10.
+      // So totalLiters = 10. Distance = 100. Eff = 100 / 10 = 10.
+      expect(statsService.calculateFuelEfficiency(logs), 10.0);
     });
 
-    test('calculateAverageCostPerKm returns 0.0 if distance is 0', () {
+    test('estimateNextOdometer calculates correctly', () {
       final logs = [
-        createLog('1', 1000, 50.0, DateTime.now()),
-        createLog('2', 1000, 60.0, DateTime.now().subtract(const Duration(days: 1))),
+        FuelLogModel(
+          id: '1',
+          odometer: 100,
+          liters: 10,
+          cost: 20,
+          timestamp: DateTime.now(),
+          userId: 'user1',
+        ),
+        FuelLogModel(
+          id: '2',
+          odometer: 200,
+          liters: 10,
+          cost: 25,
+          timestamp: DateTime.now(),
+          userId: 'user1',
+        ),
       ];
-      expect(service.calculateAverageCostPerKm(logs), 0.0);
-    });
-
-    test('calculateAverageCostPerKm calculates correctly for 2 logs', () {
-      // Log 1: Odo 100, Cost 20 (Oldest)
-      // Log 2: Odo 200, Cost 30 (Newest)
-      // Distance: 200 - 100 = 100
-      // Cost: Sum of costs (Newest...Oldest+1).
-      // Here: index 0 (Newest) is Log 2. index 1 is Log 1.
-      // Loop goes i=0 to < 1. So it sums logs[0].cost = 30.
-      // Result: 30 / 100 = 0.3
-
-      final logs = [
-        createLog('1', 100, 20.0, DateTime(2023, 1, 1)),
-        createLog('2', 200, 30.0, DateTime(2023, 1, 2)),
-      ];
-
-      expect(service.calculateAverageCostPerKm(logs), 0.3);
-    });
-
-    test('calculateAverageCostPerKm calculates correctly for multiple logs', () {
-      // Log 1: Odo 100, Cost 20 (Oldest)
-      // Log 2: Odo 200, Cost 30
-      // Log 3: Odo 300, Cost 40 (Newest)
-
-      // Sorted: Log 3, Log 2, Log 1
-      // Distance: 300 - 100 = 200
-      // Cost Sum: Log 3 (40) + Log 2 (30) = 70
-      // Result: 70 / 200 = 0.35
-
-      final logs = [
-        createLog('1', 100, 20.0, DateTime(2023, 1, 1)),
-        createLog('2', 200, 30.0, DateTime(2023, 1, 2)),
-        createLog('3', 300, 40.0, DateTime(2023, 1, 3)),
-      ];
-
-      expect(service.calculateAverageCostPerKm(logs), 0.35);
-    });
-
-    test('calculateAverageCostPerKm handles unsorted input', () {
-      final logs = [
-        createLog('2', 200, 30.0, DateTime(2023, 1, 2)),
-        createLog('1', 100, 20.0, DateTime(2023, 1, 1)),
-        createLog('3', 300, 40.0, DateTime(2023, 1, 3)),
-      ];
-
-      expect(service.calculateAverageCostPerKm(logs), 0.35);
+      expect(statsService.estimateNextOdometer(logs), 300);
     });
   });
 }

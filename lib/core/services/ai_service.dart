@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 @lazySingleton
 class AIService {
   static const _apiKey = String.fromEnvironment('GEMINI_API_KEY');
-  static const _modelName = 'gemini-2.5-flash-preview-09-2025';
+  static const _modelName = 'gemini-3.1-flash-lite';
 
   late final GenerativeModel _model;
 

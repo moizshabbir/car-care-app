@@ -1,3 +1,5 @@
+import "../../domain/log_stats_service.dart";
+import "../../domain/repositories/log_repository.dart";
 import 'package:carlog/core/services/settings_service.dart';
 import 'package:carlog/injection.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +33,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
   String? _initialLiters;
   String? _initialCost;
 
-  @override
+    @override
   void initState() {
     super.initState();
     final state = context.read<QuickLogBloc>().state;
@@ -43,15 +45,27 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
     _odometerController = TextEditingController(text: _initialOdometer);
     _litersController = TextEditingController(text: _initialLiters);
     _costController = TextEditingController(text: _initialCost);
+
+    _estimateOdometerIfNeeded();
   }
 
-  @override
-  void dispose() {
-    _odometerController.dispose();
-    _litersController.dispose();
-    _costController.dispose();
-    super.dispose();
+  Future<void> _estimateOdometerIfNeeded() async {
+    if (_odometerController.text.isEmpty) {
+        final repo = getIt<LogRepository>();
+        final stats = LogStatsService();
+        final logs = await repo.getRecentFuelLogs();
+        if (logs.isNotEmpty) {
+            final est = stats.estimateNextOdometer(logs);
+            if (mounted) {
+                setState(() {
+                    _odometerController.text = est.toString();
+                    _initialOdometer = est.toString();
+                });
+            }
+        }
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -151,14 +165,38 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
               // Grid for Volume and Cost
               Row(
                 children: [
-                  Expanded(
-                    child: _buildField(
-                      controller: _litersController,
-                      label: 'Volume',
-                      icon: Icons.local_gas_station,
-                      suffix: 'L',
+                                    Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildField(
+                          controller: _litersController,
+                          label: 'Volume',
+                          icon: Icons.local_gas_station,
+                          suffix: 'L',
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 4,
+                          children: [1, 5, 10, 20].map((val) => InkWell(
+                            onTap: () {
+                              double current = double.tryParse(_litersController.text) ?? 0.0;
+                              _litersController.text = (current + val).toStringAsFixed(1);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF135BEC).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text('+$val', style: const TextStyle(color: Color(0xFF135BEC), fontSize: 12, fontWeight: FontWeight.bold)),
+                            ),
+                          )).toList(),
+                        ),
+                      ],
                     ),
                   ),
+
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildField(

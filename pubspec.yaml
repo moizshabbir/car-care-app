@@ -66,6 +66,7 @@ dependencies:
   bloc: ^9.2.0
   geocoding: ^4.0.0
   google_generative_ai: ^0.4.5
+  csv: ^8.0.0
 
 dev_dependencies:
 # test: ^1.26.0

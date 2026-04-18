@@ -67,6 +67,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
     // 1. Avg Cost / KM
     final avgCost = _statsService.calculateAverageCostPerKm(fuelLogs);
+    final fuelEff = _statsService.calculateFuelEfficiency(fuelLogs);
 
     // 2. Total Fuel Cost
     double totalFuel = 0.0;
@@ -119,6 +120,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         amount: log.cost,
         date: log.timestamp,
         type: LogType.fuel,
+        originalLog: log,
       ));
     }
 
@@ -130,6 +132,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         amount: log.cost,
         date: log.date,
         type: LogType.service,
+        originalLog: log,
       ));
     }
 
@@ -138,6 +141,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     emit(currentState.copyWith(
       status: DashboardStatus.loaded,
       avgCostPerKm: avgCost,
+      fuelEfficiency: fuelEff,
       totalFuelCost: totalFuel,
       lastServiceCost: lastServiceCost,
       lastServiceDate: lastServiceDate,

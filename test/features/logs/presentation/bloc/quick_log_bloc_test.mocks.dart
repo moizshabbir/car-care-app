@@ -174,6 +174,24 @@ class MockLogRepository extends _i1.Mock implements _i7.LogRepository {
             returnValue: _i8.Stream<List<_i10.MaintenanceLogModel>>.empty(),
           )
           as _i8.Stream<List<_i10.MaintenanceLogModel>>);
+
+  @override
+  _i8.Future<void> deleteFuelLog(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteFuelLog, [id]),
+            returnValue: _i8.Future<void>.value(),
+            returnValueForMissingStub: _i8.Future<void>.value(),
+          )
+          as _i8.Future<void>);
+
+  @override
+  _i8.Future<void> deleteMaintenanceLog(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteMaintenanceLog, [id]),
+            returnValue: _i8.Future<void>.value(),
+            returnValueForMissingStub: _i8.Future<void>.value(),
+          )
+          as _i8.Future<void>);
 }
 
 /// A class which mocks [LocationService].
