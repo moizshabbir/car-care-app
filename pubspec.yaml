@@ -67,6 +67,7 @@ dependencies:
   geocoding: ^4.0.0
   google_generative_ai: ^0.4.5
   csv: ^8.0.0
+  http: ^1.6.0
 
 dev_dependencies:
 # test: ^1.26.0

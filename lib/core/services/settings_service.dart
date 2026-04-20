@@ -12,6 +12,9 @@ class SettingsService extends ChangeNotifier {
   static const String _boxName = 'settings';
   static const String _currencyKey = 'currency';
   static const String _dateFormatKey = 'date_format';
+  static const String _aiBaseUrlKey = 'ai_base_url';
+  static const String _aiApiKeyKey = 'ai_api_key';
+  static const String _aiModelKey = 'ai_model';
 
   late Box settingsBox;
 
@@ -42,6 +45,24 @@ class SettingsService extends ChangeNotifier {
   Future<void> setDateFormat(String value) async {
     await settingsBox.put(_dateFormatKey, value);
     _dateFormatController.add(value);
+    notifyListeners();
+  }
+
+  String get aiBaseUrl => settingsBox.get(_aiBaseUrlKey, defaultValue: '');
+  Future<void> setAiBaseUrl(String value) async {
+    await settingsBox.put(_aiBaseUrlKey, value);
+    notifyListeners();
+  }
+
+  String get aiApiKey => settingsBox.get(_aiApiKeyKey, defaultValue: '');
+  Future<void> setAiApiKey(String value) async {
+    await settingsBox.put(_aiApiKeyKey, value);
+    notifyListeners();
+  }
+
+  String get aiModel => settingsBox.get(_aiModelKey, defaultValue: '');
+  Future<void> setAiModel(String value) async {
+    await settingsBox.put(_aiModelKey, value);
     notifyListeners();
   }
 

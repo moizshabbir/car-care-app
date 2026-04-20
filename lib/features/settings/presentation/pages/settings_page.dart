@@ -10,6 +10,7 @@ import 'notifications_page.dart';
 import 'privacy_security_page.dart';
 import 'profile_page.dart';
 import 'data_management_page.dart';
+import 'ai_config_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -105,6 +106,13 @@ class _SettingsPageState extends State<SettingsPage> {
             value: _settingsService.dateFormat,
             options: ['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'dd MMM yyyy'],
             onChanged: (val) => _settingsService.setDateFormat(val),
+          ),
+          ListTile(
+            leading: const Icon(Icons.psychology, color: Colors.purpleAccent),
+            title: const Text('AI Configuration', style: TextStyle(color: Colors.white)),
+            subtitle: const Text('Custom OCR Model setup', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AiConfigPage())),
           ),
           const Divider(color: Colors.grey, height: 32),
           ListTile(

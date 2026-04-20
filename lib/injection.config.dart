@@ -53,7 +53,6 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final mockFirebaseModule = _$MockFirebaseModule();
     final firebaseModule = _$FirebaseModule();
-    gh.lazySingleton<_i716.AIService>(() => _i716.AIService());
     gh.lazySingleton<_i65.LocationService>(() => _i65.LocationService());
     gh.lazySingleton<_i400.OCRService>(() => _i400.OCRService());
     gh.lazySingleton<_i607.SettingsService>(
@@ -105,6 +104,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i59.FirebaseAuth>(),
         gh<_i116.GoogleSignIn>(),
       ),
+    );
+    gh.lazySingleton<_i716.AIService>(
+      () => _i716.AIService(gh<_i607.SettingsService>()),
     );
     gh.lazySingleton<_i349.LogRepository>(
       () => _i425.LogRepositoryImpl(

@@ -9,7 +9,6 @@ import '../../domain/repositories/auth_repository.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
-  bool _isGoogleSignInInitialized = false;
 
   AuthRepositoryImpl(this._firebaseAuth, this._googleSignIn);
 
@@ -42,48 +41,52 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserCredential> signInWithGoogle() async {
     try {
-      if (!_isGoogleSignInInitialized) {
-        await _googleSignIn.initialize();
-        _isGoogleSignInInitialized = true;
-      }
-      final googleUser = await _googleSignIn.authenticate();
-      
-      debugPrint("Google User obtained: ${googleUser.email}");
-      
-      final dynamic gAuth = googleUser.authentication;
+      debugPrint("Starting Google Sign-In (v7 logic)...");
 
-      debugPrint("Google Auth obtained. ID Token: ${gAuth.idToken != null ? 'Present' : 'NULL'}, Access Token: ${gAuth.accessToken != null ? 'Present' : 'NULL'}");
+      // authenticate() is the core method in v7.x for interactive sign-in
+      final GoogleSignInAccount user = await _googleSignIn.authenticate();
       
-      if (gAuth.idToken == null && gAuth.accessToken == null) {
-        debugPrint("SEVERE: Both ID Token and Access Token are NULL. This usually means the Google Cloud Console configuration is incorrect or the SHA-1 fingerprint doesn't match.");
+      debugPrint("Google User obtained: ${user.email}");
+      
+      final GoogleSignInAuthentication gAuth = user.authentication;
+      debugPrint("Tokens received → ID Token: ${gAuth.idToken != null}");
+
+      if (gAuth.idToken == null) {
+        throw FirebaseAuthException(
+          code: 'missing-google-id-token',
+          message: 'Google ID Token is missing',
+        );
       }
-      debugPrint("ID Token length: ${gAuth.idToken?.length ?? 0}");
-      debugPrint("Access Token length: ${gAuth.accessToken?.length ?? 0}");
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: gAuth.accessToken,
         idToken: gAuth.idToken,
       );
-      debugPrint("Firebase GoogleAuthProvider credential created.");
 
-      debugPrint("Signing into Firebase with Google Credential...");
+      debugPrint("Signing into Firebase...");
       final userCredential = await _firebaseAuth.signInWithCredential(credential);
-      debugPrint("Firebase Sign-In successful. User UID: ${userCredential.user?.uid}");
+      debugPrint("Firebase Sign-In successful: ${userCredential.user?.uid}");
+
       return userCredential;
     } catch (e, stack) {
       debugPrint("Google Sign-In Error: $e");
       debugPrint("Stack Trace: $stack");
+
       if (e is FirebaseAuthException) {
         rethrow;
       }
-      final errorMessage = e.toString().toLowerCase();
-      if (errorMessage.contains('cancel') || errorMessage.contains('abort')) {
+
+      final error = e.toString().toLowerCase();
+      if (error.contains('cancel') || error.contains('abort')) {
         throw FirebaseAuthException(
           code: 'google-sign-in-cancelled',
           message: 'Google sign-in was cancelled by user',
         );
       }
-      rethrow;
+
+      throw FirebaseAuthException(
+        code: 'google-sign-in-failed',
+        message: e.toString(),
+      );
     }
   }
 

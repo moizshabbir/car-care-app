@@ -39,15 +39,21 @@ void main() async {
       debugPrint("Firebase initialized");
 
       // Initialize GoogleSignIn (required in 7.x)
+      // Including serverClientId is CRITICAL for Firebase to receive the idToken on Android
       debugPrint("Initializing GoogleSignIn...");
-      await GoogleSignIn.instance.initialize();
-      debugPrint("GoogleSignIn initialized");
+      const serverClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+      await GoogleSignIn.instance.initialize(
+        serverClientId: serverClientId.isEmpty ? null : serverClientId,
+      );
+      debugPrint("GoogleSignIn initialized. Server Client ID: ${serverClientId.isEmpty ? 'MISSING (Check --dart-define)' : 'Set'}");
 
       // Check if Firebase configuration was loaded correctly
-      if (DefaultFirebaseOptions.android.appId.isEmpty || DefaultFirebaseOptions.android.appId.startsWith('1:')) {
-         if (DefaultFirebaseOptions.android.appId.isEmpty) {
-           debugPrint("WARNING: Firebase App ID is empty! Did you forget to run with --dart-define-from-file=.env?");
-         }
+      final appId = DefaultFirebaseOptions.android.appId;
+      if (appId.isEmpty) {
+        debugPrint("SEVERE WARNING: Firebase App ID is empty! AI and Auth will likely fail.");
+        debugPrint("Ensure you are running with --dart-define-from-file=.env");
+      } else {
+        debugPrint("Firebase Configuration validated (App ID: ${appId.substring(0, 10)}...)");
       }
 
       // Pass all uncaught "fatal" errors from the framework to Crashlytics

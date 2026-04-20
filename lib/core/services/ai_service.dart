@@ -3,154 +3,177 @@ import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'settings_service.dart';
 
 @lazySingleton
 class AIService {
-  static const _apiKey = String.fromEnvironment('GEMINI_API_KEY');
-  static const _modelName = 'gemini-3.1-flash-lite';
+  static const _defaultApiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const _defaultModelName = 'gemini-1.5-flash'; // safer + stable
 
+  final SettingsService _settingsService;
   late final GenerativeModel _model;
 
-  AIService() {
+  AIService(this._settingsService) {
     _model = GenerativeModel(
-      model: _modelName,
-      apiKey: _apiKey,
+      model: _defaultModelName,
+      apiKey: _defaultApiKey,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
+        temperature: 0.2, // 🔥 reduce hallucination
       ),
     );
   }
 
-  /// NEW NATIVE IMAGE FLOW (Modeled exactly after user's index.js)
-  Future<Map<String, dynamic>?> analyzeReceiptImage(Uint8List imageBytes) async {
-    if (_apiKey.isEmpty) {
-      debugPrint('WARNING: GEMINI_API_KEY is not set. AI parsing will not work.');
-      return null;
-    }
-
+  Future<Map<String, dynamic>?> analyzeReceiptImage(
+      Uint8List imageBytes) async {
     const systemPrompt = '''
-You are an expert OCR agent. Extract data from the receipt image into one of these 3 JSON formats:
+You are an expert OCR + financial parser.
 
-1. If Refuel (Gas/Petrol/Diesel): { "type": "refuel", "name": "Station Name", "date": "YYYY-MM-DD", "liter": 0.00, "total_amount": 0.00, "currency": "..." }
-2. If Store (Groceries/Items): { "type": "store", "name": "Store Name", "date": "YYYY-MM-DD", "items": [{"name": "item", "qty": 1, "price": 0, "total": 0}], "total_amount": 0, "currency": "..." }
-3. If Mechanic (Repairs/Parts/Labor): { "type": "mechanic", "name": "Shop Name", "date": "YYYY-MM-DD", "items": [{"name": "maintenance item", "price": 0}], "total_amount": 0, "currency": "..." }
+Extract structured data from the image.
 
-CRITICAL: 
-- If you see "Labor", "Service", "Repair", "Oil Filter", or "Brake Pad", classify as "mechanic".
-- If you see "Super", "HSD", "Diesel", "Petrol" or specific liter counts, classify as "refuel".
-- Return ONLY valid JSON.
+Return ONLY valid JSON (no markdown, no explanation).
+
+Supported types:
+
+1. Refuel:
+{
+"type": "refuel",
+"name": "...",
+"date": "YYYY-MM-DD",
+"liter": number,
+"price_per_liter": number,
+"total_amount": number,
+"currency": "...",
+"odometer": number|null
+}
+
+2. Store:
+{
+"type": "store",
+"name": "...",
+"date": "YYYY-MM-DD",
+"items": [{"name": "...", "qty": number, "price": number, "total": number}],
+"total_amount": number,
+"currency": "...",
+"odometer": number|null
+}
+
+3. Mechanic:
+{
+"type": "mechanic",
+"name": "...",
+"date": "YYYY-MM-DD",
+"items": [{"name": "...", "price": number}],
+"labor_cost": number|null,
+"total_amount": number,
+"currency": "...",
+"odometer": number|null
+}
+
+RULES:
+- Extract odometer if visible (e.g. KM, mileage, odo)
+- Do NOT guess values
+- Numbers must be numeric (no currency symbols)
+- If unclear → use null
 ''';
 
-    try {
-      final prompt = TextPart("Extract receipt data accurately.\n\n$systemPrompt");
-      final imagePart = DataPart('image/jpeg', imageBytes);
-      
-      final content = [Content.multi([prompt, imagePart])];
-      final response = await _model.generateContent(content);
-      
-      if (response.text != null) {
-        return jsonDecode(response.text!) as Map<String, dynamic>;
-      }
-    } catch (e) {
-      debugPrint('Error during AI receipt image analysis: $e');
+    if (_settingsService.aiBaseUrl.isNotEmpty) {
+      return await _analyzeWithOpenAI(imageBytes, systemPrompt);
     }
-    return null;
-  }
 
-  /// LEGACY TEXT FLOW (Retained for arbitrary text fallback if needed)
-  Future<Map<String, dynamic>?> analyzeReceiptText(String text, String receiptType) async {
-    if (_apiKey.isEmpty) {
-      debugPrint('WARNING: GEMINI_API_KEY is not set. AI parsing will not work.');
+    if (_defaultApiKey.isEmpty) {
+      debugPrint('Missing GEMINI_API_KEY');
       return null;
     }
 
-    final prompt = _getPromptForType(receiptType, text);
-
     try {
-      final content = [Content.text(prompt)];
-      final response = await _model.generateContent(content);
-      
-      if (response.text != null) {
-        return jsonDecode(response.text!) as Map<String, dynamic>;
-      }
+      final prompt = TextPart(systemPrompt);
+      final imagePart = DataPart('image/jpeg', imageBytes);
+
+      final response = await _model
+          .generateContent([Content.multi([prompt, imagePart])])
+          .timeout(const Duration(seconds: 25));
+
+      final text = response.text;
+      if (text == null) return null;
+
+      return _safeJsonParse(text);
     } catch (e) {
-      debugPrint('Error during AI receipt analysis: $e');
+      debugPrint('Gemini Error: $e');
+      return null;
     }
-    return null;
   }
 
-  String _getPromptForType(String type, String text) {
-    switch (type) {
-      case 'fuel':
-        return '''
-        Analyze the following text from a fuel/gas station receipt and extract the data into a JSON object.
-        CRITICAL RULES:
-        1. Do NOT confuse receipt numbers, transaction IDs, phone numbers, or zip codes with amounts or liters.
-        2. "totalAmount" must be the final price paid. Look for keywords like "TOTAL", "AMOUNT", "NET AMO", "PAYMENT" next to currency symbols (Rs, PKR, \$, ¥).
-        3. "liters" must be the volume of fuel pumped. Look for keywords like "LTR", "VOLUME", "QTY", "LITERS".
-        4. "pricePerLiter" is the unit rate. Look for keywords like "RATE", "PRICE/L".
-        5. Provide numbers as floats without currency symbols.
-        
-        JSON format:
-        {
-          "stationName": "string or null",
-          "totalAmount": number or null,
-          "liters": number or null,
-          "pricePerLiter": number or null,
-          "location": "string or null"
-        }
-        Text:
-        \$text
-        ''';
-      case 'store':
-        return '''
-        Analyze the following text from a store/POS auto parts receipt and extract the data into a JSON object.
-        CRITICAL RULES:
-        1. Do NOT confuse receipt numbers (e.g. "No. 6438"), phone numbers, or dates with prices.
-        2. "totalAmount" is the final total at the bottom.
-        3. For "items", only include actual products or services sold, ignoring headers like "DESCRIPTION", "QTY", "AMOUNT", or footer messages.
-        4. Provide numbers as floats without currency symbols.
-        
-        JSON format:
-        {
-          "storeName": "string or null",
-          "items": [
-            {
-              "name": "string",
-              "quantity": number,
-              "price": number
-            }
-          ],
-          "totalAmount": number or null
-        }
-        Text:
-        \$text
-        ''';
-      case 'mechanic':
-        return '''
-        Analyze the following text from a mechanic or vehicle repair bill and extract the data into a JSON object.
-        CRITICAL RULES:
-        1. Do NOT confuse invoice numbers, phone numbers, or dates with prices.
-        2. "totalAmount" is the sum or final price at the bottom.
-        3. For "services", only include the labor or parts listed with a cost, ignoring headers or footer text.
-        4. Provide numbers as floats without currency symbols.
-        
-        JSON format:
-        {
-          "mechanicName": "string or null",
-          "services": [
-            {
-              "description": "string",
-              "cost": number
-            }
-          ],
-          "totalAmount": number or null
-        }
-        Text:
-        \$text
-        ''';
-      default:
-        return 'Analyze this text and extract any meaningful receipt data into JSON: \$text';
+  /// 🔥 SAFE JSON PARSER (CRITICAL FIX)
+  Map<String, dynamic>? _safeJsonParse(String raw) {
+    try {
+      String cleaned = raw.trim();
+
+      // remove markdown
+      if (cleaned.contains('```')) {
+        cleaned = cleaned
+            .replaceAll(RegExp(r'```json'), '')
+            .replaceAll('```', '')
+            .trim();
+      }
+
+      return jsonDecode(cleaned);
+    } catch (e) {
+      debugPrint('JSON Parse Failed: $e');
+      debugPrint('RAW RESPONSE: $raw');
+      return null;
     }
+  }
+
+  Future<Map<String, dynamic>?> _analyzeWithOpenAI(
+      Uint8List imageBytes, String systemPrompt) async {
+    final baseUrl = _settingsService.aiBaseUrl;
+    final apiKey = _settingsService.aiApiKey;
+    final model = _settingsService.aiModel;
+
+    final url = Uri.parse(
+        baseUrl.endsWith('/') ? '${baseUrl}chat/completions' : '$baseUrl/chat/completions');
+
+    final base64Image = base64Encode(imageBytes);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        },
+        body: jsonEncode({
+          'model': model,
+          'temperature': 0.2,
+          'messages': [
+            {'role': 'system', 'content': systemPrompt},
+            {
+              'role': 'user',
+              'content': [
+                {'type': 'text', 'text': 'Extract receipt data'},
+                {
+                  'type': 'image_url',
+                  'image_url': {
+                    'url': 'data:image/jpeg;base64,$base64Image'
+                  }
+                }
+              ]
+            }
+          ],
+        }),
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final content = data['choices'][0]['message']['content'];
+        return _safeJsonParse(content.toString());
+      }
+    } catch (e) {
+      debugPrint('OpenAI Error: $e');
+    }
+
+    return null;
   }
 }
