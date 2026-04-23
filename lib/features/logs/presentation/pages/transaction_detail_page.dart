@@ -15,7 +15,7 @@ import '../../data/models/maintenance_log_model.dart';
 class TransactionDetailPage extends StatelessWidget {
   final DashboardLogItem logItem;
 
-  const TransactionDetailPage({Key? key, required this.logItem}) : super(key: key);
+  const TransactionDetailPage({super.key, required this.logItem});
 
   Future<void> _delete(BuildContext context) async {
     final confirmed = await showDialog<bool>(

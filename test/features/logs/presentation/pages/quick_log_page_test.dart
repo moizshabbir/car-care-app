@@ -7,7 +7,6 @@ import 'package:carlog/features/logs/presentation/bloc/quick_log_state.dart';
 import 'package:carlog/features/logs/presentation/pages/quick_log_page.dart';
 import 'package:carlog/features/logs/presentation/widgets/fuel_log_manual_entry_sheet.dart';
 import 'package:carlog/features/vehicles/presentation/bloc/vehicle_bloc.dart';
-import 'package:carlog/features/vehicles/data/models/vehicle_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';

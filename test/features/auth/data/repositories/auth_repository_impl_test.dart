@@ -120,7 +120,7 @@ void main() {
     group('signOut', () {
       test('calls signOut on both firebase and google sign in', () async {
         when(mockFirebaseAuth.signOut()).thenAnswer((_) async {});
-        when(mockGoogleSignIn.signOut()).thenAnswer((_) async => null);
+        when(mockGoogleSignIn.signOut()).thenAnswer((_) async {});
 
         await repository.signOut();
 

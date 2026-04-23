@@ -141,7 +141,7 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
                     title: const Text('Include Total Spent', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                     subtitle: const Text('Show amount spent on vehicle', style: TextStyle(color: Colors.grey, fontSize: 12)),
                     value: _includeTotalSpent,
-                    activeColor: Colors.white,
+                    activeThumbColor: Colors.white,
                     activeTrackColor: const Color(0xFF135BEC),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
@@ -162,7 +162,7 @@ class _ShareStatsPageState extends State<ShareStatsPage> {
                     title: const Text('Include Total Distance', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                     subtitle: const Text('Show kilometers tracked', style: TextStyle(color: Colors.grey, fontSize: 12)),
                     value: _includeTotalDistance,
-                    activeColor: Colors.white,
+                    activeThumbColor: Colors.white,
                     activeTrackColor: const Color(0xFF135BEC),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),

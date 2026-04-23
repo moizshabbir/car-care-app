@@ -47,49 +47,28 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
   }
 
   Future<void> _onStartCamera(StartCamera event, Emitter<QuickLogState> emit) async {
-    try {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) {
-        emit(state.copyWith(
-          status: QuickLogStatus.error,
-          errorMessage: 'No cameras available',
-        ));
-        return;
-      }
-      // Use the first camera (usually back camera)
-      final controller = CameraController(
-        cameras.first,
-        ResolutionPreset.high,
-        enableAudio: false,
-      );
-
-      await controller.initialize();
-      emit(state.copyWith(
-        status: QuickLogStatus.cameraReady,
-        cameraController: controller,
-      ));
-    } catch (e) {
-      emit(state.copyWith(
-        status: QuickLogStatus.error,
-        errorMessage: 'Failed to initialize camera: $e',
-      ));
-    }
+    // Just reset the state to ready when starting
+    emit(state.copyWith(
+      status: QuickLogStatus.cameraReady,
+    ));
   }
 
   Future<void> _onCaptureImage(CaptureImage event, Emitter<QuickLogState> emit) async {
-    if (state.cameraController == null || !state.cameraController!.value.isInitialized) {
-      return;
-    }
-
     emit(state.copyWith(status: QuickLogStatus.capturing));
 
     try {
-      final file = await state.cameraController!.takePicture();
-      emit(state.copyWith(
-        status: QuickLogStatus.imageCaptured,
-        imageFile: file,
-      ));
-      add(ProcessImage());
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.camera);
+      if (pickedFile != null) {
+        emit(state.copyWith(
+          status: QuickLogStatus.imageCaptured,
+          imageFile: XFile(pickedFile.path),
+        ));
+        add(ProcessImage());
+      } else {
+        // User cancelled camera
+        emit(state.copyWith(status: QuickLogStatus.cameraReady));
+      }
     } catch (e) {
       emit(state.copyWith(
         status: QuickLogStatus.error,
@@ -139,10 +118,9 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
   }
 
   Future<void> _onRetakeImage(RetakeImage event, Emitter<QuickLogState> emit) async {
-    // Reset data but keep camera controller
-    emit(QuickLogState(
+    // Reset data
+    emit(const QuickLogState(
       status: QuickLogStatus.cameraReady,
-      cameraController: state.cameraController,
     ));
   }
 

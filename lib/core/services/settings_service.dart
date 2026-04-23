@@ -107,6 +107,7 @@ class SettingsService extends ChangeNotifier {
     }
   }
 
+  @override
   @disposeMethod
   void dispose() {
     _currencyController.close();

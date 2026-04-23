@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/services/analytics_service.dart';
-import '../../../../injection.dart';
 import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/quick_log_bloc.dart';
 import '../bloc/quick_log_event.dart';

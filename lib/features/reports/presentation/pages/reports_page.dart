@@ -300,9 +300,9 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(log.category, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                if (log.note != null && log.note!.isNotEmpty) ...[
+                if (log.note.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text(log.note!, style: TextStyle(color: Colors.grey[400], fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(log.note, style: TextStyle(color: Colors.grey[400], fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
               ],
             ),

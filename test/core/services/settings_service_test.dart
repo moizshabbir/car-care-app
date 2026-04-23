@@ -2,7 +2,6 @@ import 'package:carlog/core/services/settings_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:mocktail/mocktail.dart';
-import 'dart:io';
 
 class MockBox extends Mock implements Box {}
 

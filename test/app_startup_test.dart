@@ -8,21 +8,7 @@ import 'package:carlog/features/logs/data/models/fuel_log_model.dart';
 import 'package:carlog/features/logs/data/models/location_model.dart';
 import 'package:carlog/features/logs/data/models/maintenance_log_model.dart';
 import 'package:carlog/features/vehicles/data/models/vehicle_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_performance/firebase_performance.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mockito/annotations.dart';
 
-@GenerateNiceMocks([
-  MockSpec<FirebaseAuth>(),
-  MockSpec<GoogleSignIn>(),
-  MockSpec<FirebaseAnalytics>(),
-  MockSpec<FirebasePerformance>(),
-  MockSpec<FirebaseFirestore>(),
-])
-import 'app_startup_test.mocks.dart';
 
 void main() {
   testWidgets('App should not get stuck initializing', (WidgetTester tester) async {

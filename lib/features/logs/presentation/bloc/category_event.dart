@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:carlog/features/logs/data/models/category_model.dart';
 
 abstract class CategoryEvent extends Equatable {
   const CategoryEvent();

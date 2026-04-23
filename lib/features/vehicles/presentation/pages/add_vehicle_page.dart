@@ -74,7 +74,7 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
 
       try {
         if (widget.vehicle == null) {
-          final registeredVehicle = await getIt<VehicleRepository>().addVehicle(vehicle);
+          await getIt<VehicleRepository>().addVehicle(vehicle);
           
           // If initial odometer is provided, create a log entry
           if (_odometerController.text.isNotEmpty) {

@@ -13,7 +13,7 @@ class DashboardLogItem extends Equatable {
   final DateTime date;
   final LogType type;
 
-  DashboardLogItem({
+  const DashboardLogItem({
     required this.id,
     required this.title,
     required this.subtitle,

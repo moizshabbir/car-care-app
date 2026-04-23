@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
@@ -10,7 +9,7 @@ import '../../../../injection.dart';
 import '../../../logs/domain/repositories/log_repository.dart';
 
 class DataManagementPage extends StatefulWidget {
-  const DataManagementPage({Key? key}) : super(key: key);
+  const DataManagementPage({super.key});
 
   @override
   State<DataManagementPage> createState() => _DataManagementPageState();

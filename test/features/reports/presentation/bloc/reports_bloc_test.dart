@@ -9,7 +9,6 @@ import 'package:carlog/features/reports/presentation/bloc/reports_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../logs/presentation/bloc/quick_log_bloc_test.mocks.dart';
 
 class MockLogRepository extends Mock implements LogRepository {}
 

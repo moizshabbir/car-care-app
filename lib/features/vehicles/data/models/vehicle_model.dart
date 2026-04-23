@@ -32,7 +32,7 @@ class VehicleModel extends Equatable {
   @JsonKey(defaultValue: false)
   final bool isSold;
 
-  VehicleModel({
+  const VehicleModel({
     required this.id,
     required this.name,
     required this.make,

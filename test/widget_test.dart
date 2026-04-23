@@ -3,7 +3,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:carlog/features/logs/presentation/bloc/dashboard_bloc.dart';
 import 'package:carlog/main.dart';
 import 'package:carlog/features/vehicles/presentation/bloc/vehicle_bloc.dart';
-import 'package:carlog/features/vehicles/domain/repositories/vehicle_repository.dart';
 import 'package:carlog/features/vehicles/data/models/vehicle_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';

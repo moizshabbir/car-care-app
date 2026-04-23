@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:carlog/features/logs/data/models/category_model.dart';
 import 'package:carlog/features/logs/domain/repositories/category_repository.dart';
