@@ -228,4 +228,22 @@ class LogRepositoryImpl implements LogRepository {
     }
     await _firestore.collection('maintenance_logs').doc(id).delete();
   }
+
+  @override
+  Future<void> updateFuelLog(FuelLogModel log) async {
+    if (Hive.isBoxOpen('fuel_logs')) {
+      final box = Hive.box<FuelLogModel>('fuel_logs');
+      await box.put(log.id, log);
+    }
+    await _firestore.collection('fuel_logs').doc(log.id).set(log.toJson());
+  }
+
+  @override
+  Future<void> updateMaintenanceLog(MaintenanceLogModel log) async {
+    if (Hive.isBoxOpen('maintenance_logs')) {
+      final box = Hive.box<MaintenanceLogModel>('maintenance_logs');
+      await box.put(log.id, log);
+    }
+    await _firestore.collection('maintenance_logs').doc(log.id).set(log.toJson());
+  }
 }

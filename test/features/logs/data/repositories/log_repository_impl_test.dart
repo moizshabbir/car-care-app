@@ -128,4 +128,38 @@ void main() {
     final box = Hive.box<FuelLogModel>('fuel_logs');
     expect(box.get('remote_id'), isNotNull);
   });
+
+  test('updateFuelLog updates Hive and Firestore', () async {
+    final log = FuelLogModel(
+      id: 'update_id',
+      odometer: 1000,
+      liters: 50.0,
+      cost: 100.0,
+      timestamp: DateTime.now(),
+      location: LocationModel(latitude: 0, longitude: 0, timestamp: DateTime.now()),
+      userId: 'test_user_id',
+    );
+
+    await repository.addFuelLog(log);
+
+    final updatedLog = FuelLogModel(
+      id: 'update_id',
+      odometer: 1500, // Updated
+      liters: 50.0,
+      cost: 100.0,
+      timestamp: DateTime.now(),
+      location: LocationModel(latitude: 0, longitude: 0, timestamp: DateTime.now()),
+      userId: 'test_user_id',
+    );
+
+    await repository.updateFuelLog(updatedLog);
+
+    // Verify Hive
+    final box = Hive.box<FuelLogModel>('fuel_logs');
+    expect(box.get('update_id')!.odometer, 1500);
+
+    // Verify Firestore
+    final doc = await fakeFirestore.collection('fuel_logs').doc('update_id').get();
+    expect(doc.data()!['odometer'], 1500);
+  });
 }

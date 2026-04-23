@@ -16,9 +16,15 @@ import '../../../../core/services/ocr_service.dart';
 import '../../../../core/services/receipt_parser_service.dart';
 import '../../../../core/services/settings_service.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import '../../data/models/fuel_log_model.dart';
+import '../../data/models/maintenance_log_model.dart';
+
+import '../bloc/dashboard_bloc.dart';
 
 class AddExpensePage extends StatefulWidget {
-  const AddExpensePage({super.key});
+  final DashboardLogItem? existingLog;
+
+  const AddExpensePage({super.key, this.existingLog});
 
   @override
   State<AddExpensePage> createState() => _AddExpensePageState();
@@ -121,6 +127,26 @@ class _AddExpensePageState extends State<AddExpensePage> {
   @override
   void initState() {
     super.initState();
+    if (widget.existingLog != null) {
+      _isManualEntry = true;
+      _costController.text = widget.existingLog!.amount.toStringAsFixed(2);
+      _notesController.text = widget.existingLog!.subtitle;
+      _selectedDate = widget.existingLog!.date;
+      
+      final log = widget.existingLog!.originalLog;
+      if (log is FuelLogModel) {
+        _selectedCategory = 'Fuel';
+        _odometerController.text = log.odometer.toString();
+        _litersController.text = log.liters.toString();
+        _photoPath = log.odometerPhotoPath;
+      } else if (log is MaintenanceLogModel) {
+        _selectedCategory = log.category;
+        if (log.odometer != null) {
+          _odometerController.text = log.odometer.toString();
+        }
+        _photoPath = log.photoPath;
+      }
+    }
   }
 
   @override
@@ -158,16 +184,30 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
       final vehicleId = context.read<VehicleBloc>().state.selectedVehicle?.id;
 
-      context.read<ExpenseLogBloc>().add(SaveExpenseLog(
-        cost: cost,
-        category: _selectedCategory,
-        note: _notesController.text,
-        date: _selectedDate,
-        odometer: odometer,
-        liters: liters,
-        photoPath: _photoPath,
-        vehicleId: vehicleId,
-      ));
+      if (widget.existingLog != null) {
+        context.read<ExpenseLogBloc>().add(UpdateExpenseLog(
+          id: widget.existingLog!.id,
+          cost: cost,
+          category: _selectedCategory,
+          note: _notesController.text,
+          date: _selectedDate,
+          odometer: odometer,
+          liters: liters,
+          photoPath: _photoPath,
+          vehicleId: vehicleId,
+        ));
+      } else {
+        context.read<ExpenseLogBloc>().add(SaveExpenseLog(
+          cost: cost,
+          category: _selectedCategory,
+          note: _notesController.text,
+          date: _selectedDate,
+          odometer: odometer,
+          liters: liters,
+          photoPath: _photoPath,
+          vehicleId: vehicleId,
+        ));
+      }
     }
   }
 
@@ -213,7 +253,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                         ),
                       ),
                       Text(
-                        'Add Expense',
+                        widget.existingLog != null ? 'Edit Expense' : 'Add Expense',
                         style: GoogleFonts.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

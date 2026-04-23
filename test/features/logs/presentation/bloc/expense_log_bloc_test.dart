@@ -82,6 +82,30 @@ void main() {
         isA<ExpenseLogState>().having((s) => s.status, 'status', ExpenseLogStatus.error),
       ],
     );
+
+    blocTest<ExpenseLogBloc, ExpenseLogState>(
+      'emits [saving, saved] when UpdateExpenseLog is added successfully',
+      build: () {
+        when(() => mockLogRepository.updateMaintenanceLog(any()))
+            .thenAnswer((_) async => {});
+        return expenseLogBloc;
+      },
+      act: (bloc) => bloc.add(UpdateExpenseLog(
+        id: '123',
+        cost: 150.0,
+        category: 'Service',
+        note: 'Oil Change Updated',
+        date: DateTime(2026, 3, 1),
+        vehicleId: 'v1',
+      )),
+      expect: () => [
+        const ExpenseLogState(status: ExpenseLogStatus.saving),
+        const ExpenseLogState(status: ExpenseLogStatus.saved),
+      ],
+      verify: (_) {
+        verify(() => mockLogRepository.updateMaintenanceLog(any())).called(1);
+      },
+    );
   });
 }
 

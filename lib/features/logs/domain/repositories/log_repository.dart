@@ -11,4 +11,6 @@ abstract class LogRepository {
   Stream<List<MaintenanceLogModel>> getMaintenanceLogsStream(String vehicleId);
   Future<void> deleteFuelLog(String id);
   Future<void> deleteMaintenanceLog(String id);
+  Future<void> updateFuelLog(FuelLogModel log);
+  Future<void> updateMaintenanceLog(MaintenanceLogModel log);
 }

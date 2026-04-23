@@ -42,6 +42,7 @@ class DashboardState extends Equatable {
   final DateTime? lastRefuelDate;
   final int odometer;
   final List<DashboardLogItem> recentLogs;
+  final List<DashboardLogItem> allLogs;
   final String? errorMessage;
 
   const DashboardState({
@@ -57,6 +58,7 @@ class DashboardState extends Equatable {
     this.lastRefuelDate,
     this.odometer = 0,
     this.recentLogs = const [],
+    this.allLogs = const [],
     this.errorMessage,
   });
 
@@ -73,6 +75,7 @@ class DashboardState extends Equatable {
     DateTime? lastRefuelDate,
     int? odometer,
     List<DashboardLogItem>? recentLogs,
+    List<DashboardLogItem>? allLogs,
     String? errorMessage,
   }) {
     return DashboardState(
@@ -88,6 +91,7 @@ class DashboardState extends Equatable {
       lastRefuelDate: lastRefuelDate ?? this.lastRefuelDate,
       odometer: odometer ?? this.odometer,
       recentLogs: recentLogs ?? this.recentLogs,
+      allLogs: allLogs ?? this.allLogs,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -105,6 +109,7 @@ class DashboardState extends Equatable {
         lastRefuelDate,
         odometer,
         recentLogs,
+        allLogs,
         errorMessage,
       ];
 }

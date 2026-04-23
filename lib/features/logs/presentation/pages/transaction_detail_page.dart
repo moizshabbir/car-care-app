@@ -11,6 +11,7 @@ import '../../domain/repositories/log_repository.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../../data/models/fuel_log_model.dart';
 import '../../data/models/maintenance_log_model.dart';
+import 'add_expense_page.dart';
 
 class TransactionDetailPage extends StatelessWidget {
   final DashboardLogItem logItem;
@@ -88,6 +89,17 @@ class TransactionDetailPage extends StatelessWidget {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent),
+            onPressed: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (_) => AddExpensePage(existingLog: logItem),
+                ),
+              ).then((_) => Navigator.pop(context)); // Close detail page after editing so dashboard shows new data
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
             onPressed: () => _delete(context),

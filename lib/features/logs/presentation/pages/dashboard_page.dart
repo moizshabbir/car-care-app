@@ -16,6 +16,7 @@ import 'scan_receipt_page.dart';
 import 'scan_mechanic_bill_page.dart';
 import 'share_stats_page.dart';
 import '../../../reports/presentation/pages/reports_page.dart';
+import 'all_transactions_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -81,23 +82,6 @@ class _DashboardViewState extends State<DashboardView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: BlocBuilder<VehicleBloc, VehicleState>(
-            builder: (context, state) {
-              final vehicle = state.selectedVehicle;
-              if (vehicle?.imagePath != null) {
-                return CircleAvatar(
-                  backgroundImage: FileImage(File(vehicle!.imagePath!)),
-                );
-              }
-              return CircleAvatar(
-                backgroundColor: Colors.grey[800],
-                child: const Icon(Icons.person, color: Colors.white),
-              );
-            },
-          ),
-        ),
         title: const Text('My Garage', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           IconButton(
@@ -112,35 +96,37 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ],
       ),
-      body: BlocBuilder<DashboardBloc, DashboardState>(
-        builder: (context, state) {
-          if (state.status == DashboardStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _buildVehicleSwitcher(),
+          ),
+          Expanded(
+            child: BlocBuilder<DashboardBloc, DashboardState>(
+              builder: (context, state) {
+                if (state.status == DashboardStatus.loading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildVehicleSwitcher(),
-              ),
-              Expanded(
-                child: state.recentLogs.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Text(
-                            "Your dashboard is looking a bit lonely! Tap the scan icon below to log your first fuel fill-up or maintenance task.",
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16,
-                              height: 1.5,
-                            ),
-                          ),
+                if (state.recentLogs.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Text(
+                        "Your dashboard is looking a bit lonely! Tap the scan icon below to log your first fuel fill-up or maintenance task.",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16,
+                          height: 1.5,
                         ),
-                      )
-                    : SingleChildScrollView(
+                      ),
+                    ),
+                  );
+                }
+
+                return SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,7 +164,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 Text('Recent Logs', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                                 TextButton(
                                   onPressed: () {
-                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsPage()));
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AllTransactionsPage()));
                                   },
                                   child: const Text('View All'),
                                 ),
@@ -188,11 +174,11 @@ class _DashboardViewState extends State<DashboardView> {
                             const SizedBox(height: 80), // Space for FAB
                           ],
                         ),
-                      ),
-              ),
-            ],
-          );
-        },
+                      );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

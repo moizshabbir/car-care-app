@@ -148,6 +148,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       lastRefuelDate: lastRefuelDate,
       odometer: maxOdo,
       recentLogs: mixedLogs.take(5).toList(),
+      allLogs: mixedLogs,
     ));
   }
 

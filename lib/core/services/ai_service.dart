@@ -21,6 +21,30 @@ class AIService {
       apiKey: _defaultApiKey,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
+        responseSchema: Schema.object(
+          properties: {
+            'type': Schema.enumString(enumValues: ['refuel', 'store', 'mechanic']),
+            'name': Schema.string(nullable: true),
+            'date': Schema.string(nullable: true),
+            'total_amount': Schema.number(nullable: true),
+            'currency': Schema.string(nullable: true),
+            'odometer': Schema.number(nullable: true),
+            'liter': Schema.number(nullable: true),
+            'price_per_liter': Schema.number(nullable: true),
+            'items': Schema.array(
+              items: Schema.object(
+                properties: {
+                  'name': Schema.string(nullable: true),
+                  'qty': Schema.number(nullable: true),
+                  'price': Schema.number(nullable: true),
+                  'total': Schema.number(nullable: true),
+                },
+              ),
+              nullable: true,
+            ),
+          },
+          requiredProperties: ['type'],
+        ),
         temperature: 0.2, // 🔥 reduce hallucination
       ),
     );
