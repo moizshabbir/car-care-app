@@ -138,11 +138,20 @@ RULES:
       final text = response.text;
       debugPrint('AI_SERVICE: Raw text from Gemini: "$text"');
       
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.log('AI_SERVICE: Gemini RAW RESPONSE: $text');
+      }
+
       if (text == null) {
         throw AIException('Gemini returned an empty response. The image might be too blurry or contain no readable text.');
       }
 
-      return safeJsonParse(text);
+      final parsed = safeJsonParse(text);
+      if (parsed == null) {
+        debugPrint('AI_SERVICE Error: Failed to parse JSON from: "$text"');
+        throw AIException('Failed to extract data from the receipt. The format might be unsupported.');
+      }
+      return parsed;
     } on GenerativeAIException catch (e) {
       final msg = e.message.toLowerCase();
       if (msg.contains('quota') || msg.contains('429')) {

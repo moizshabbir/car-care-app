@@ -4,8 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
-import 'package:mockito/mockito.dart';
-// Mocks will be generated in a test file instead to avoid issues with build_runner
+import 'package:injectable/injectable.dart';
 
 @module
 abstract class FirebaseModule {
@@ -43,32 +42,51 @@ abstract class FirebaseModule {
 abstract class MockFirebaseModule {
   @test
   @lazySingleton
-  FirebaseAuth get firebaseAuth => _MockFirebaseAuth();
+  FirebaseAuth get firebaseAuth => _FakeFirebaseAuth();
 
   @test
   @lazySingleton
-  GoogleSignIn get googleSignIn => _MockGoogleSignIn();
+  GoogleSignIn get googleSignIn => _FakeGoogleSignIn();
 
   @test
   @lazySingleton
-  FirebaseAnalytics get analytics => _MockFirebaseAnalytics();
+  FirebaseAnalytics get analytics => _FakeFirebaseAnalytics();
 
   @test
   @lazySingleton
-  FirebasePerformance get performance => _MockFirebasePerformance();
+  FirebasePerformance get performance => _FakeFirebasePerformance();
 
   @test
   @lazySingleton
-  FirebaseFirestore get firestore => _MockFirebaseFirestore();
+  FirebaseFirestore get firestore => _FakeFirebaseFirestore();
 }
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {
+// Using Fake classes instead of Mockito to avoid dev_dependency issues in lib
+class _FakeFirebaseAuth implements FirebaseAuth {
   @override
   Stream<User?> authStateChanges() => Stream.value(null);
   @override
   User? get currentUser => null;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
-class _MockGoogleSignIn extends Mock implements GoogleSignIn {}
-class _MockFirebaseAnalytics extends Mock implements FirebaseAnalytics {}
-class _MockFirebasePerformance extends Mock implements FirebasePerformance {}
-class _MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+
+class _FakeGoogleSignIn implements GoogleSignIn {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeFirebaseAnalytics implements FirebaseAnalytics {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeFirebasePerformance implements FirebasePerformance {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeFirebaseFirestore implements FirebaseFirestore {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

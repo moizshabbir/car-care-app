@@ -178,7 +178,8 @@ class _AddExpensePageState extends State<AddExpensePage> {
         return;
       }
 
-      final cost = double.tryParse(_costController.text);
+      final costText = _costController.text.replaceAll(',', '.');
+      final cost = double.tryParse(costText);
       if (cost == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid cost')),
@@ -539,6 +540,34 @@ class _AddExpensePageState extends State<AddExpensePage> {
                         ],
 
                         _buildLabel('Location (Optional)'),
+                        if (_selectedLocation != null) ...[
+                          Container(
+                            height: 150,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Theme.of(context).dividerColor),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                  target: LatLng(_selectedLocation!.latitude, _selectedLocation!.longitude),
+                                  zoom: 15,
+                                ),
+                                markers: {
+                                  Marker(
+                                    markerId: const MarkerId('selected'),
+                                    position: LatLng(_selectedLocation!.latitude, _selectedLocation!.longitude),
+                                  ),
+                                },
+                                zoomControlsEnabled: false,
+                                myLocationButtonEnabled: false,
+                                mapToolbarEnabled: false,
+                              ),
+                            ),
+                          ),
+                        ],
                         InkWell(
                           onTap: () async {
                             final LatLng? picked = await Navigator.push(

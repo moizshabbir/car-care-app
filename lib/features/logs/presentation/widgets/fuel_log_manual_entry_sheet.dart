@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:image_picker/image_picker.dart';
+import '../../../../core/services/receipt_parser_service.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../vehicles/presentation/bloc/vehicle_bloc.dart';
 import '../bloc/quick_log_bloc.dart';
@@ -65,6 +67,41 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
     }
   }
 
+  Future<void> _scanOdometer() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.camera);
+    
+    if (image != null) {
+      // Show loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Scanning odometer...')),
+      );
+
+      try {
+        final parser = getIt<ReceiptParserService>();
+        // Using a focused prompt or specific parsing for odometer
+        final result = await parser.parseFuelReceipt(image.path);
+        
+        if (result.odometer != null) {
+          setState(() {
+            _odometerController.text = result.odometer!.toInt().toString();
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Odometer updated!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not find odometer value in image.')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Scan failed: $e')),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +151,9 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
              );
           }
         },
-        child: SingleChildScrollView(
+        child: SafeArea(
+          bottom: true,
+          child: SingleChildScrollView(
           child: Form(
             key: _formKey,
             child: Column(
@@ -159,6 +198,10 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
                 icon: Icons.speed,
                 suffix: 'km',
                 isInteger: true,
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.camera_alt, color: Color(0xFF135BEC)),
+                  onPressed: _scanOdometer,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -192,32 +235,33 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
               const SizedBox(height: 16),
 
               // Swatches spread to full width
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 4,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 1.6,
-                children: [1, 5, 10, 20].map((val) => InkWell(
-                  onTap: () {
-                    double current = double.tryParse(_litersController.text) ?? 0.0;
-                    _litersController.text = (current + val).toStringAsFixed(1);
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF135BEC).withOpacity(0.1),
+              Row(
+                children: [1, 5, 10, 20].map((val) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: InkWell(
+                      onTap: () {
+                        double current = double.tryParse(_litersController.text) ?? 0.0;
+                        _litersController.text = (current + val).toStringAsFixed(1);
+                      },
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF135BEC).withOpacity(0.4), width: 1.5),
-                    ),
-                    child: Text(
-                      '+$val L', 
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF135BEC), 
-                        fontSize: 14, 
-                        fontWeight: FontWeight.bold
-                      )
+                      child: Container(
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF135BEC).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF135BEC).withOpacity(0.4), width: 1.5),
+                        ),
+                        child: Text(
+                          '+$val L', 
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF135BEC), 
+                            fontSize: 14, 
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 )).toList(),
@@ -278,6 +322,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
         ),
       ),
     ),
+    ),
     );
   }
 
@@ -288,6 +333,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
     String? suffix,
     String? prefix,
     bool isInteger = false,
+    Widget? suffixIcon,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -314,6 +360,7 @@ class _FuelLogManualEntrySheetState extends State<FuelLogManualEntrySheet> {
             prefixText: prefix != null ? '$prefix ' : null,
             prefixStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
             suffixText: suffix,
+            suffixIcon: suffixIcon,
             suffixStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
             filled: true,
             fillColor: isDark ? const Color(0xFF0B0E14) : Colors.white,

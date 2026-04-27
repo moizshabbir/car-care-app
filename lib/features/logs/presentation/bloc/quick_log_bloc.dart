@@ -139,30 +139,36 @@ class QuickLogBloc extends Bloc<QuickLogEvent, QuickLogState> {
       debugPrint('QUICK_LOG_BLOC: Result from Parser: ${parsed?.runtimeType}');
 
       if (parsed is ParsedFuelReceipt) {
+        debugPrint('QUICK_LOG_BLOC: Mapped Fuel Receipt - Amount: ${parsed.totalAmount}, Liters: ${parsed.liters}, Odo: ${parsed.odometer}');
         emit(state.copyWith(
           status: QuickLogStatus.review,
           receiptType: ReceiptType.fuel,
           stationName: parsed.stationName,
           cost: parsed.totalAmount,
           liters: parsed.liters,
+          odometer: parsed.odometer?.toInt(),
           scannedCurrency: parsed.currency,
         ));
       } else if (parsed is ParsedPOSReceipt) {
+        debugPrint('QUICK_LOG_BLOC: Mapped POS Receipt - Amount: ${parsed.totalAmount}, Odo: ${parsed.odometer}');
         emit(state.copyWith(
           status: QuickLogStatus.review,
           receiptType: ReceiptType.pos,
           stationName: parsed.storeName,
           parsedPOSItems: parsed.items,
           cost: parsed.totalAmount,
+          odometer: parsed.odometer?.toInt(),
           scannedCurrency: parsed.currency,
         ));
       } else if (parsed is ParsedMechanicBill) {
+        debugPrint('QUICK_LOG_BLOC: Mapped Mechanic Bill - Amount: ${parsed.totalAmount}, Odo: ${parsed.odometer}');
         emit(state.copyWith(
           status: QuickLogStatus.review,
           receiptType: ReceiptType.mechanic,
           stationName: parsed.mechanicName,
           parsedServiceItems: parsed.services,
           cost: parsed.totalAmount,
+          odometer: parsed.odometer?.toInt(),
           scannedCurrency: parsed.currency,
         ));
       } else {

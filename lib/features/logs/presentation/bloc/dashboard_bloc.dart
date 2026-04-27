@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:intl/intl.dart';
+import '../../../../injection.dart';
+import '../../../../core/services/settings_service.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
@@ -15,12 +18,13 @@ part 'dashboard_state.dart';
 @injectable
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final LogRepository _logRepository;
+  final SettingsService _settingsService;
   final LogStatsService _statsService;
 
   StreamSubscription? _fuelSubscription;
   StreamSubscription? _maintenanceSubscription;
 
-  DashboardBloc(this._logRepository)
+  DashboardBloc(this._logRepository, this._settingsService)
       : _statsService = LogStatsService(),
         super(const DashboardState()) {
     on<SubscribeToLogs>(_onSubscribeToLogs);
@@ -112,11 +116,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     for (var log in fuelLogs) {
       mixedLogs.add(DashboardLogItem(
         id: log.id,
-        title: 'Refuel', // We don't have station name in FuelLogModel yet?
-        // FuelLogModel has LocationModel.
-        // Screenshot shows "Shell Station", "Chevron".
-        // If we don't have this data, we'll just say "Refuel" or "Fuel Log".
-        subtitle: '${log.liters.toStringAsFixed(1)}L @ \$${(log.cost / log.liters).toStringAsFixed(2)}/L',
+        title: log.stationName ?? 'Refuel',
+        subtitle: '${log.liters.toStringAsFixed(1)}L • ${NumberFormat.currency(symbol: _settingsService.currency).format(log.cost / log.liters)}/L',
         amount: log.cost,
         date: log.timestamp,
         type: LogType.fuel,

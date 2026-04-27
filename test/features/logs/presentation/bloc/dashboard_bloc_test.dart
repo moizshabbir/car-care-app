@@ -5,18 +5,25 @@ import 'package:carlog/features/logs/data/models/location_model.dart';
 import 'package:carlog/features/logs/data/models/maintenance_log_model.dart';
 import 'package:carlog/features/logs/domain/repositories/log_repository.dart';
 import 'package:carlog/features/logs/presentation/bloc/dashboard_bloc.dart';
+import 'package:carlog/core/services/settings_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLogRepository extends Mock implements LogRepository {}
+class MockSettingsService extends Mock implements SettingsService {}
 
 void main() {
   late DashboardBloc dashboardBloc;
   late MockLogRepository mockLogRepository;
+  late MockSettingsService mockSettingsService;
 
   setUp(() {
     mockLogRepository = MockLogRepository();
-    dashboardBloc = DashboardBloc(mockLogRepository);
+    mockSettingsService = MockSettingsService();
+    
+    when(() => mockSettingsService.currency).thenReturn(r'$');
+    
+    dashboardBloc = DashboardBloc(mockLogRepository, mockSettingsService);
   });
 
   tearDown(() {

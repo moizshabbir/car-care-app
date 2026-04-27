@@ -149,22 +149,20 @@ class TransactionDetailPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   child: Stack(
                     children: [
-                      AbsorbPointer(
-                        child: GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: LatLng(lat, lng),
-                            zoom: 15,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId('location'),
-                              position: LatLng(lat, lng),
-                            ),
-                          },
-                          zoomControlsEnabled: false,
-                          myLocationButtonEnabled: false,
-                          mapToolbarEnabled: false,
+                      GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(lat, lng),
+                          zoom: 15,
                         ),
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId('location'),
+                            position: LatLng(lat, lng),
+                          ),
+                        },
+                        zoomControlsEnabled: false,
+                        myLocationButtonEnabled: false,
+                        mapToolbarEnabled: false,
                       ),
                       Positioned.fill(
                         child: Material(

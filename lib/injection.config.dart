@@ -55,10 +55,6 @@ extension GetItInjectableX on _i174.GetIt {
     final firebaseModule = _$FirebaseModule();
     gh.lazySingleton<_i65.LocationService>(() => _i65.LocationService());
     gh.lazySingleton<_i400.OCRService>(() => _i400.OCRService());
-    gh.lazySingleton<_i607.SettingsService>(
-      () => _i607.SettingsService(),
-      dispose: (i) => i.dispose(),
-    );
     gh.lazySingleton<_i59.FirebaseAuth>(
       () => mockFirebaseModule.firebaseAuth,
       registerFor: {_test},
@@ -105,9 +101,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i116.GoogleSignIn>(),
       ),
     );
-    gh.lazySingleton<_i716.AIService>(
-      () => _i716.AIService(gh<_i607.SettingsService>()),
-    );
     gh.lazySingleton<_i349.LogRepository>(
       () => _i425.LogRepositoryImpl(
         gh<_i974.FirebaseFirestore>(),
@@ -129,14 +122,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i363.AuthBloc>(
       () => _i363.AuthBloc(gh<_i1015.AuthRepository>()),
     );
-    gh.factory<_i958.DashboardBloc>(
-      () => _i958.DashboardBloc(gh<_i349.LogRepository>()),
+    gh.lazySingleton<_i607.SettingsService>(
+      () => _i607.SettingsService(
+        gh<_i59.FirebaseAuth>(),
+        gh<_i974.FirebaseFirestore>(),
+      ),
+      dispose: (i) => i.dispose(),
     );
     gh.factory<_i866.ReportsBloc>(
       () => _i866.ReportsBloc(gh<_i349.LogRepository>()),
-    );
-    gh.lazySingleton<_i729.ReceiptParserService>(
-      () => _i729.ReceiptParserService(gh<_i729.AIService>()),
     );
     gh.lazySingleton<_i737.VehicleRepository>(
       () => _i186.VehicleRepositoryImpl(
@@ -150,11 +144,23 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i59.FirebaseAuth>(),
       ),
     );
+    gh.lazySingleton<_i716.AIService>(
+      () => _i716.AIService(gh<_i607.SettingsService>()),
+    );
+    gh.factory<_i958.DashboardBloc>(
+      () => _i958.DashboardBloc(
+        gh<_i349.LogRepository>(),
+        gh<_i607.SettingsService>(),
+      ),
+    );
     gh.factory<_i114.VehicleBloc>(
       () => _i114.VehicleBloc(gh<_i737.VehicleRepository>()),
     );
     gh.factory<_i234.CategoryBloc>(
       () => _i234.CategoryBloc(gh<_i165.CategoryRepository>()),
+    );
+    gh.lazySingleton<_i729.ReceiptParserService>(
+      () => _i729.ReceiptParserService(gh<_i729.AIService>()),
     );
     gh.factory<_i795.QuickLogBloc>(
       () => _i795.QuickLogBloc(

@@ -45,12 +45,18 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<UserCredential> signInWithGoogle() async {
     try {
       debugPrint("Starting Google Sign-In (v7 logic)...");
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.log("GoogleSignIn: Starting flow");
+      }
 
       // authenticate() is used in this project's version of GoogleSignIn
       final GoogleSignInAccount? user = await _googleSignIn.authenticate();
       
       if (user == null) {
         debugPrint("Google Sign-In was aborted by user.");
+        if (!kIsWeb && Firebase.apps.isNotEmpty) {
+          FirebaseCrashlytics.instance.log("GoogleSignIn: User aborted");
+        }
         throw FirebaseAuthException(
           code: 'google-sign-in-cancelled',
           message: 'Sign-in was cancelled.',
@@ -58,13 +64,22 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       
       debugPrint("Google User obtained: ${user.email}");
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.log("GoogleSignIn: User obtained: ${user.email}");
+      }
       
       // In this version, authentication is a synchronous getter
       final GoogleSignInAuthentication gAuth = user.authentication;
       debugPrint("Tokens received → ID Token: ${gAuth.idToken != null}");
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.log("GoogleSignIn: Tokens received, ID Token present: ${gAuth.idToken != null}");
+      }
 
       if (gAuth.idToken == null) {
-        debugPrint("ERROR: Google ID Token is missing. Check Firebase/Google Console configuration.");
+        debugPrint("ERROR: Google ID Token is missing.");
+        if (!kIsWeb && Firebase.apps.isNotEmpty) {
+          FirebaseCrashlytics.instance.log("GoogleSignIn: ERROR - ID Token is null");
+        }
         throw FirebaseAuthException(
           code: 'missing-google-id-token',
           message: 'Google ID Token is missing. This usually means the SHA-1 fingerprint is not configured correctly in Firebase.',
@@ -76,8 +91,14 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       debugPrint("Signing into Firebase...");
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.log("GoogleSignIn: Signing into Firebase");
+      }
       final userCredential = await _firebaseAuth.signInWithCredential(credential);
       debugPrint("Firebase Sign-In successful: ${userCredential.user?.uid}");
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        FirebaseCrashlytics.instance.log("GoogleSignIn: Firebase Sign-In successful: ${userCredential.user?.uid}");
+      }
 
       return userCredential;
     } on PlatformException catch (e, stack) {

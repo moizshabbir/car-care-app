@@ -15,6 +15,7 @@ class ParsedFuelReceipt {
   final String? location;
 
   final String? currency;
+  final double? odometer;
 
   ParsedFuelReceipt({
     this.stationName,
@@ -23,6 +24,7 @@ class ParsedFuelReceipt {
     this.pricePerLiter,
     this.location,
     this.currency,
+    this.odometer,
   });
 
   @override
@@ -49,8 +51,9 @@ class ParsedPOSReceipt {
   final double? totalAmount;
 
   final String? currency;
+  final double? odometer;
 
-  ParsedPOSReceipt({this.storeName, this.items = const [], this.totalAmount, this.currency});
+  ParsedPOSReceipt({this.storeName, this.items = const [], this.totalAmount, this.currency, this.odometer});
 }
 
 /// A single service item from a mechanic bill
@@ -71,12 +74,14 @@ class ParsedMechanicBill {
   final double? totalAmount;
 
   final String? currency;
+  final double? odometer;
 
   ParsedMechanicBill({
     this.mechanicName,
     this.services = const [],
     this.totalAmount,
     this.currency,
+    this.odometer,
   });
 }
 
@@ -115,13 +120,15 @@ class ReceiptParserService {
     final aiData = await _aiService.analyzeReceiptImage(bytes, typeHint: ReceiptType.fuel);
     
     if (aiData != null) {
+      debugPrint('PARSER_SERVICE: Mapping Fuel Receipt data: $aiData');
       return ParsedFuelReceipt(
         stationName: aiData['name']?.toString(),
         totalAmount: _parseDouble(aiData['total_amount']),
         liters: _parseDouble(aiData['liter']),
-        pricePerLiter: null,
+        pricePerLiter: _parseDouble(aiData['price_per_liter']),
         location: null,
         currency: aiData['currency']?.toString(),
+        odometer: _parseDouble(aiData['odometer']),
       );
     }
     
@@ -226,11 +233,13 @@ class ReceiptParserService {
     debugPrint('PARSER_SERVICE: AI classified receipt as normalized type: "$type"');
 
     if (type == 'refuel') {
-      debugPrint('PARSER_SERVICE: Mapping to ParsedFuelReceipt');
+      debugPrint('PARSER_SERVICE: Mapping to ParsedFuelReceipt with data: $aiData');
       return ParsedFuelReceipt(
         stationName: aiData['name']?.toString(),
         totalAmount: _parseDouble(aiData['total_amount']),
         liters: _parseDouble(aiData['liter']),
+        currency: aiData['currency']?.toString(),
+        odometer: _parseDouble(aiData['odometer']),
       );
     } else if (type == 'store') {
       debugPrint('PARSER_SERVICE: Mapping to ParsedPOSReceipt');

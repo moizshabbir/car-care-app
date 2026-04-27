@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive_ce.dart';
@@ -188,28 +189,108 @@ class LogRepositoryImpl implements LogRepository {
 
   @override
   Stream<List<FuelLogModel>> getFuelLogsStream(String vehicleId) {
-    return _firestore
+    final controller = StreamController<List<FuelLogModel>>();
+    
+    _initFuelStream(vehicleId, controller);
+    
+    return controller.stream;
+  }
+
+  Future<void> _initFuelStream(String vehicleId, StreamController<List<FuelLogModel>> controller) async {
+    final box = Hive.isBoxOpen('fuel_logs')
+        ? Hive.box<FuelLogModel>('fuel_logs')
+        : await Hive.openBox<FuelLogModel>('fuel_logs');
+
+    List<FuelLogModel> getLocal() {
+      final logs = box.values.where((log) => log.vehicleId == vehicleId).toList();
+      logs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return logs;
+    }
+
+    // Yield initial local data
+    if (!controller.isClosed) controller.add(getLocal());
+
+    // Watch local changes
+    final watchSub = box.watch().listen((_) {
+      if (!controller.isClosed) controller.add(getLocal());
+    });
+
+    // Listen to Firestore updates
+    final remoteSub = _firestore
         .collection('fuel_logs')
         .where('vehicleId', isEqualTo: vehicleId)
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => FuelLogModel.fromJson(doc.data())).toList();
+        .listen((snapshot) async {
+      final remoteLogs = snapshot.docs.map((doc) => FuelLogModel.fromJson(doc.data())).toList();
+      
+      // Update local cache without triggering infinite loops if possible
+      // (box.put will trigger box.watch, which is what we want)
+      for (var log in remoteLogs) {
+        if (box.get(log.id) == null || box.get(log.id)!.timestamp != log.timestamp) {
+           await box.put(log.id, log);
+        }
+      }
+    }, onError: (e) {
+      debugPrint('LOG_REPO: Firestore Fuel Stream Error: $e');
     });
+
+    controller.onCancel = () {
+      watchSub.cancel();
+      remoteSub.cancel();
+    };
   }
 
   @override
   Stream<List<MaintenanceLogModel>> getMaintenanceLogsStream(String vehicleId) {
-    return _firestore
+    final controller = StreamController<List<MaintenanceLogModel>>();
+    
+    _initMaintenanceStream(vehicleId, controller);
+    
+    return controller.stream;
+  }
+
+  Future<void> _initMaintenanceStream(String vehicleId, StreamController<List<MaintenanceLogModel>> controller) async {
+    final box = Hive.isBoxOpen('maintenance_logs')
+        ? Hive.box<MaintenanceLogModel>('maintenance_logs')
+        : await Hive.openBox<MaintenanceLogModel>('maintenance_logs');
+
+    List<MaintenanceLogModel> getLocal() {
+      final logs = box.values.where((log) => log.vehicleId == vehicleId).toList();
+      logs.sort((a, b) => b.date.compareTo(a.date));
+      return logs;
+    }
+
+    // Yield initial local data
+    if (!controller.isClosed) controller.add(getLocal());
+
+    // Watch local changes
+    final watchSub = box.watch().listen((_) {
+      if (!controller.isClosed) controller.add(getLocal());
+    });
+
+    // Listen to Firestore updates
+    final remoteSub = _firestore
         .collection('maintenance_logs')
         .where('vehicleId', isEqualTo: vehicleId)
         .orderBy('date', descending: true)
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => MaintenanceLogModel.fromJson(doc.data()))
-          .toList();
+        .listen((snapshot) async {
+      final remoteLogs = snapshot.docs.map((doc) => MaintenanceLogModel.fromJson(doc.data())).toList();
+      
+      for (var log in remoteLogs) {
+        if (box.get(log.id) == null || box.get(log.id)!.date != log.date) {
+           await box.put(log.id, log);
+        }
+      }
+    }, onError: (e) {
+      debugPrint('LOG_REPO: Firestore Maintenance Stream Error: $e');
     });
+
+    controller.onCancel = () {
+      watchSub.cancel();
+      remoteSub.cancel();
+    };
   }
   @override
   Future<void> deleteFuelLog(String id) async {
